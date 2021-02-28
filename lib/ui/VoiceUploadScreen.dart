@@ -12,15 +12,16 @@ import 'package:web_socket_channel/status.dart' as status;
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
-  _VoiceUploadScreenState createState() =>
-      _VoiceUploadScreenState();
+  _VoiceUploadScreenState createState() => _VoiceUploadScreenState();
 }
+
 // Change this URL to your own
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 //ws://103.16.63.37:9002/api/asr/
 
 class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
-  final channel = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));//IOWebSocketChannel.connect(_SERVER_URL);
+  final channel = IOWebSocketChannel.connect(
+      Uri.parse(_SERVER_URL)); //IOWebSocketChannel.connect(_SERVER_URL);
   var textController = new TextEditingController();
   RecorderStream _recorder = RecorderStream();
   PlayerStream _player = PlayerStream();
@@ -52,13 +53,12 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     //var channel = IOWebSocketChannel.connect(_SERVER_URL);
     //================= For streaming voice to Server ===================
     channel.stream.listen((event) async {
-       print(event);
+      print(event);
       if (_isPlaying) _player.writeChunk(event);
     });
 
     _audioStream = _recorder.audioStream.listen((data) {
       channel.sink.add(data);
-
     });
 
     _recorderStatus = _recorder.status.listen((status) {
@@ -77,7 +77,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
           textController.text = data.toString();
         });
         _micChunks.add(data);
-         //print(data);
+        //print(data);
 
       }
     });
@@ -87,7 +87,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         setState(() {
           _isPlaying = status == SoundStreamStatus.Playing;
           print(status);
-
         });
     });
 
@@ -97,15 +96,15 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     ]);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 5,bottom: 10,right: 5,left: 5),
-            child:Card(
+            padding:
+                const EdgeInsets.only(top: 5, bottom: 10, right: 5, left: 5),
+            child: Card(
               clipBehavior: Clip.antiAlias,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -114,7 +113,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 5,right: 5),
+                      padding: const EdgeInsets.only(left: 5, right: 5),
                       child: Container(
                         child: SingleChildScrollView(
                           child: TextField(
@@ -130,7 +129,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                       ),
                     ),
                   ),
-
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
@@ -140,8 +138,14 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                         padding: const EdgeInsets.only(left: 10),
                         child: Row(
                           children: [
-                            Icon(Icons.attach_file,color: Colors.indigo,),
-                            Text("TheVoiceNIPTICT.wav",style: TextStyle(color: Colors.indigo),),
+                            Icon(
+                              Icons.attach_file,
+                              color: Colors.indigo,
+                            ),
+                            Text(
+                              "TheVoiceNIPTICT.wav",
+                              style: TextStyle(color: Colors.indigo),
+                            ),
                           ],
                         ),
                       ),
@@ -160,7 +164,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                                 color: Colors.indigo,
                                 onPressed: () {},
                               ),
-
                             ],
                           ),
                         ],
@@ -172,7 +175,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
             ),
           ),
         ),
-
         Image.asset(
           'assets/images/upload2.png',
           fit: BoxFit.contain,

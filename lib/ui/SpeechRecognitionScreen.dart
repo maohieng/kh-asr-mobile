@@ -1,102 +1,95 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
-import 'package:niptict_asr_app/utils/HexColor.dart';
-import 'package:sound_stream/sound_stream.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as status;
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SpeechRecognitionScreen extends StatefulWidget {
   @override
   _SpeechRecognitionScreenState createState() =>
       _SpeechRecognitionScreenState();
 }
-// Change this URL to your own
+
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
-//ws://103.16.63.37:9002/api/asr/
+const int _SAMPLE_RATE = 16000;
+
+typedef _Fn = void Function();
 
 class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
-  final channel = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));//IOWebSocketChannel.connect(_SERVER_URL);
+  bool _mRecorderIsInited = false;
+  FlutterSoundRecorder _mRecorder = FlutterSoundRecorder();
+  StreamSubscription _mRecordingDataSubscription;
+
+  final channel = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
   var textController = new TextEditingController();
-  RecorderStream _recorder = RecorderStream();
-  PlayerStream _player = PlayerStream();
-
-  List<Uint8List> _micChunks = [];
-  bool _isRecording = false;
-  bool _isPlaying = false;
-
-  StreamSubscription _recorderStatus;
-  StreamSubscription _playerStatus;
-  StreamSubscription _audioStream;
 
   @override
   void initState() {
     super.initState();
-    initPlugin();
+    _openRecorder();
   }
 
   @override
   void dispose() {
-    _recorderStatus?.cancel();
-    _playerStatus?.cancel();
-    _audioStream?.cancel();
+    stopRecorder();
+    _mRecorder.closeAudioSession();
+    _mRecorder = null;
+
     super.dispose();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlugin() async {
-    //var channel = IOWebSocketChannel.connect(_SERVER_URL);
-    //================= For streaming voice to Server ===================
-    channel.stream.listen((event) async {
-       print(event);
-      if (_isPlaying) _player.writeChunk(event);
+  Future<void> _openRecorder() async {
+    var status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('Microphone permission not granted');
+    }
+    await _mRecorder.openAudioSession();
+    setState(() {
+      _mRecorderIsInited = true;
     });
+  }
 
-    _audioStream = _recorder.audioStream.listen((data) {
-      channel.sink.add(data);
+  Future<void> stopRecorder() async {
+    await _mRecorder.stopRecorder();
+    if (_mRecordingDataSubscription != null) {
+      await _mRecordingDataSubscription.cancel();
+      _mRecordingDataSubscription = null;
+    }
+  }
 
-    });
+  Future<void> record() async {
+    assert(_mRecorderIsInited);
 
-    _recorderStatus = _recorder.status.listen((status) {
-      if (mounted)
-        setState(() {
-          _isRecording = status == SoundStreamStatus.Playing;
-        });
-    });
+    var recordingDataController = StreamController<Food>();
 
-    _audioStream = _recorder.audioStream.listen((data) {
-      if (_isPlaying) {
-        _player.writeChunk(data);
-        //print(data);
-      } else {
-        setState(() {
-          textController.text = data.toString();
-        });
-        _micChunks.add(data);
-         //print(data);
-
+    _mRecordingDataSubscription =
+        recordingDataController.stream.listen((buffer) {
+      if (buffer is FoodData) {
+        print(buffer.data);
       }
     });
 
-    _playerStatus = _player.status.listen((status) {
-      if (mounted)
-        setState(() {
-          _isPlaying = status == SoundStreamStatus.Playing;
-          print(status);
+    await _mRecorder.startRecorder(
+      toStream: recordingDataController.sink,
+      codec: Codec.pcm16,
+      numChannels: 1,
+      sampleRate: _SAMPLE_RATE,
+    );
 
-        });
-    });
-
-    await Future.wait([
-      _recorder.initialize(),
-      _player.initialize(),
-    ]);
+    setState(() {});
   }
 
+  _Fn getRecorderFn() {
+    if (!_mRecorderIsInited) {
+      return null;
+    }
+    return _mRecorder.isStopped
+        ? record
+        : () {
+            stopRecorder().then((value) => setState(() {}));
+          };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,8 +97,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
       children: <Widget>[
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 5,bottom: 10,right: 5,left: 5),
-            child:Card(
+            padding:
+                const EdgeInsets.only(top: 5, bottom: 10, right: 5, left: 5),
+            child: Card(
               clipBehavior: Clip.antiAlias,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -114,7 +108,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 5,right: 5),
+                      padding: const EdgeInsets.only(left: 5, right: 5),
                       child: Container(
                         child: SingleChildScrollView(
                           child: TextField(
@@ -130,7 +124,6 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                       ),
                     ),
                   ),
-
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
@@ -140,8 +133,14 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                         padding: const EdgeInsets.only(left: 10),
                         child: Row(
                           children: [
-                            Icon(Icons.timer,color: Colors.indigo,),
-                            Text("00:00:00",style: TextStyle(color: Colors.indigo),),
+                            Icon(
+                              Icons.timer,
+                              color: Colors.indigo,
+                            ),
+                            Text(
+                              "00:00:00",
+                              style: TextStyle(color: Colors.indigo),
+                            ),
                           ],
                         ),
                       ),
@@ -160,7 +159,6 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                 color: Colors.indigo,
                                 onPressed: () {},
                               ),
-
                             ],
                           ),
                         ],
@@ -172,21 +170,21 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
             ),
           ),
         ),
-
         GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap:_isRecording ? _recorder.stop : _recorder.start,
+          onTap: getRecorderFn(),
           child: Container(
             height: 90,
-            child: _isRecording == false
+            child: _mRecorder.isRecording == false
                 ? Image.asset(
-              'assets/images/microphone_2_2.png',
-              fit: BoxFit.contain,
-              height: 62,
-              width: 62,
-            )   : RipplesAnimation(
-              child: null,
-            ),
+                    'assets/images/microphone_2_2.png',
+                    fit: BoxFit.contain,
+                    height: 62,
+                    width: 62,
+                  )
+                : RipplesAnimation(
+                    child: null,
+                  ),
           ),
         ),
         Padding(

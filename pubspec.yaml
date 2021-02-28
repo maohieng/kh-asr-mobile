@@ -33,6 +33,8 @@ dependencies:
   web_socket_channel: ^1.1.0
   websocket_manager: ^0.2.2
   lite_rolling_switch: ^0.1.1
+  flutter_sound: ^7.7.0+1
+  permission_handler: ^5.0.1
 
 dev_dependencies:
   flutter_test:
