@@ -30,7 +30,9 @@ dependencies:
   cupertino_icons: ^1.0.0
   vibration: ^1.4.0
   sound_stream: ^0.2.0
-  web_socket_channel: ^1.2.0
+  web_socket_channel: ^1.1.0
+  websocket_manager: ^0.2.2
+  lite_rolling_switch: ^0.1.1
 
 dev_dependencies:
   flutter_test:

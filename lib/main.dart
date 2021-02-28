@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:niptict_asr_app/ui/AnimationScreen.dart';
+import 'package:niptict_asr_app/ui/widget/MainPage.dart';
 
 import 'ui/HomeScreen.dart';
 import 'ui/SpeechRecognitionScreen.dart';
 
 
 void main() => runApp(MyApp());
-
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
         children: <Widget>[
         Scaffold(
        
-    body: HomeScreen()
+    body: MainPage()
     ),
     IgnorePointer(
     child: AnimationScreen(

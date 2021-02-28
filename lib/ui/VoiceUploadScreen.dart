@@ -10,16 +10,16 @@ import 'package:sound_stream/sound_stream.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
-class SpeechRecognitionScreen extends StatefulWidget {
+class VoiceUploadScreen extends StatefulWidget {
   @override
-  _SpeechRecognitionScreenState createState() =>
-      _SpeechRecognitionScreenState();
+  _VoiceUploadScreenState createState() =>
+      _VoiceUploadScreenState();
 }
 // Change this URL to your own
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 //ws://103.16.63.37:9002/api/asr/
 
-class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
+class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   final channel = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));//IOWebSocketChannel.connect(_SERVER_URL);
   var textController = new TextEditingController();
   RecorderStream _recorder = RecorderStream();
@@ -140,8 +140,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                         padding: const EdgeInsets.only(left: 10),
                         child: Row(
                           children: [
-                            Icon(Icons.timer,color: Colors.indigo,),
-                            Text("00:00:00",style: TextStyle(color: Colors.indigo),),
+                            Icon(Icons.attach_file,color: Colors.indigo,),
+                            Text("TheVoiceNIPTICT.wav",style: TextStyle(color: Colors.indigo),),
                           ],
                         ),
                       ),
@@ -150,13 +150,13 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                           ButtonBar(
                             //alignment: MainAxisAlignment.end,
                             children: [
+                              // IconButton(
+                              //   icon: Icon(Icons.copy),
+                              //   color: Colors.indigo,
+                              //   onPressed: () {},
+                              // ),
                               IconButton(
-                                icon: Icon(Icons.copy),
-                                color: Colors.indigo,
-                                onPressed: () {},
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.edit),
+                                icon: Icon(Icons.upload_file),
                                 color: Colors.indigo,
                                 onPressed: () {},
                               ),
@@ -173,21 +173,11 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
           ),
         ),
 
-        GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap:_isRecording ? _recorder.stop : _recorder.start,
-          child: Container(
-            height: 90,
-            child: _isRecording == false
-                ? Image.asset(
-              'assets/images/microphone_2_2.png',
-              fit: BoxFit.contain,
-              height: 62,
-              width: 62,
-            )   : RipplesAnimation(
-              child: null,
-            ),
-          ),
+        Image.asset(
+          'assets/images/upload2.png',
+          fit: BoxFit.contain,
+          height: 62,
+          width: 62,
         ),
         Padding(
           padding: const EdgeInsets.only(top: 2),

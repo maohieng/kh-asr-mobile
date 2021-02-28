@@ -72,14 +72,25 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
         Padding(
           padding: EdgeInsets.only(bottom: 32),
           child: Align(
-            alignment: Alignment.bottomCenter,
+
+            alignment: Alignment.center,
             child: Opacity(
               opacity: _animation.textOpacity.value,
-              child: Text(
-                '',
-                style: TextStyle(
-                    color: Colors.white, fontSize: 32
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                    height: 110,
+
+                  ),
+                  SizedBox(height: 20,),
+                  Text('កម្មវិធីបំលែងពីសំលេងទៅជាអក្សរ',style: TextStyle(fontFamily: "KhMuol", fontSize: 18)),
+                  SizedBox(height: 20,),
+                  Text('© 2021 NIPTICT. Version 1.0' ,style: TextStyle(fontSize: 11)),
+
+                ],
               )
             )
           )

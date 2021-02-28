@@ -2,13 +2,22 @@ PODS:
   - Flutter (1.0.0)
   - sound_stream (0.0.1):
     - Flutter
+  - Starscream (3.1.1)
   - vibration (1.7.3):
     - Flutter
+  - websocket_manager (0.0.1):
+    - Flutter
+    - Starscream (~> 3.1.1)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - sound_stream (from `.symlinks/plugins/sound_stream/ios`)
   - vibration (from `.symlinks/plugins/vibration/ios`)
+  - websocket_manager (from `.symlinks/plugins/websocket_manager/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Starscream
 
 EXTERNAL SOURCES:
   Flutter:
@@ -17,11 +26,15 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sound_stream/ios"
   vibration:
     :path: ".symlinks/plugins/vibration/ios"
+  websocket_manager:
+    :path: ".symlinks/plugins/websocket_manager/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   sound_stream: eba0f2a5994b91d9e5009a739df6e98515a7b44f
+  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   vibration: b5a33e764c3f609a975b9dca73dce20fdde627dc
+  websocket_manager: cadb93f3b88cf3f5d60fca8629824c1b50f30e1b
 
 PODFILE CHECKSUM: a75497545d4391e2d394c3668e20cfb1c2bbd4aa
 
