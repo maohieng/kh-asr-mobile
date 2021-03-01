@@ -35,6 +35,7 @@ dependencies:
   lite_rolling_switch: ^0.1.1
   flutter_sound: ^7.7.0+1
   permission_handler: ^5.0.1
+  clipboard: ^0.1.2+8
 
 dev_dependencies:
   flutter_test:

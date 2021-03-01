@@ -5,6 +5,7 @@ import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:clipboard/clipboard.dart';
 
 class SpeechRecognitionScreen extends StatefulWidget {
   @override
@@ -189,13 +190,22 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                               IconButton(
                                 icon: Icon(Icons.copy),
                                 color: Colors.indigo,
-                                onPressed: () {},
+                                onPressed: () {
+                                  if(_textController.text.trim() == ""){
+                                    print('enter text');
+                                  } else {
+                                    print(_textController.text);
+                                    FlutterClipboard.copy(_textController.text).then(( value ) => print('copied'));
+                                  }
+                                },
                               ),
-                              // IconButton(
-                              //   icon: Icon(Icons.edit),
-                              //   color: Colors.indigo,
-                              //   onPressed: () {},
-                              // ),
+                              IconButton(
+                                icon: Icon(Icons.clear),
+                                color: Colors.indigo,
+                                onPressed: () {
+                                  _textController.clear();
+                                },
+                              ),
                             ],
                           ),
                         ],
