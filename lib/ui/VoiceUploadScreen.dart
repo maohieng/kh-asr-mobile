@@ -121,7 +121,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                             maxLines: null,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: 'សូមនិយាយជាភាសាខ្មែរ',
+                              hintText: '',
                             ),
                             style: TextStyle(fontFamily: "KhCon", fontSize: 16),
                           ),

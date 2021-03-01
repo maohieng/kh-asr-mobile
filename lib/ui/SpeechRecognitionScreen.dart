@@ -180,11 +180,11 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                 color: Colors.indigo,
                                 onPressed: () {},
                               ),
-                              IconButton(
-                                icon: Icon(Icons.edit),
-                                color: Colors.indigo,
-                                onPressed: () {},
-                              ),
+                              // IconButton(
+                              //   icon: Icon(Icons.edit),
+                              //   color: Colors.indigo,
+                              //   onPressed: () {},
+                              // ),
                             ],
                           ),
                         ],
