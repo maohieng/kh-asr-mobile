@@ -222,6 +222,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                   color: Colors.indigo,
                                   onPressed: () {
                                     _beforeResult = '';
+                                    _previousResult = '';
                                     _textController.clear();
                                     _stopwatch.reset();
                                   }),
