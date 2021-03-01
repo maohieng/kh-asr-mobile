@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
@@ -11,7 +12,8 @@ class SpeechRecognitionScreen extends StatefulWidget {
       _SpeechRecognitionScreenState();
 }
 
-const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
+// const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
+const _SERVER_URL = 'ws://172.23.21.61:9000/api/asr/';
 const int _SAMPLE_RATE = 16000;
 
 typedef _Fn = void Function();
@@ -27,6 +29,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
 
   // web socket
   IOWebSocketChannel _websocket;
+
+  String _beforeResult = '';
+  String _previousResult = '';
 
   @override
   void initState() {
@@ -48,10 +53,16 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
 
     _websocket.stream.listen((message) {
-      if (message != '') {
-        _textController.text = message;
+      if (message == '') {
+        if (_beforeResult != '') {
+          _previousResult += _beforeResult + ' ';
+        }
+      } else {
+        _textController.text = _previousResult + message;
         setState(() {});
       }
+
+      _beforeResult = message;
     });
   }
 
