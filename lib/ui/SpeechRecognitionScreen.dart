@@ -18,7 +18,7 @@ typedef _Fn = void Function();
 
 class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   // ui
-  var textController = new TextEditingController();
+  var _textController = new TextEditingController();
 
   // recorder
   bool _recorderIsInited = false;
@@ -49,8 +49,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
 
     _websocket.stream.listen((message) {
       if (message != '') {
-        print('--------------> Recieving data to server');
-        print(message);
+        _textController.text = message;
+        setState(() {});
       }
     });
   }
@@ -138,7 +138,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                       child: Container(
                         child: SingleChildScrollView(
                           child: TextField(
-                            controller: textController,
+                            controller: _textController,
                             maxLines: null,
                             decoration: InputDecoration(
                               border: InputBorder.none,
