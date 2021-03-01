@@ -200,7 +200,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                 },
                               ),
                               IconButton(
-                                icon: Icon(Icons.clear),
+                                icon: Icon(Icons.delete),
                                 color: Colors.indigo,
                                 onPressed: () {
                                   _textController.clear();
