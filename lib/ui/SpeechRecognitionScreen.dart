@@ -5,6 +5,7 @@ import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:clipboard/clipboard.dart';
 
 class SpeechRecognitionScreen extends StatefulWidget {
   @override
@@ -12,10 +13,8 @@ class SpeechRecognitionScreen extends StatefulWidget {
       _SpeechRecognitionScreenState();
 }
 
-// const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const int _SAMPLE_RATE = 16000;
-
 typedef _Fn = void Function();
 
 String formatTime(int milliseconds) {
@@ -53,15 +52,6 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     });
   }
 
-  void handleStartStop() {
-    if (_stopwatch.isRunning) {
-      _stopwatch.stop();
-    } else {
-      _stopwatch.start();
-    }
-    setState(() {}); // re-render the page
-  }
-
   @override
   void dispose() {
     stopRecorder();
@@ -69,7 +59,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     _recorder.closeAudioSession();
     _recorder = null;
 
-    _websocket.sink?.close();
+    if (_websocket != null) {
+      _websocket.sink?.close();
+    }
     super.dispose();
   }
 
@@ -215,13 +207,24 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                               IconButton(
                                 icon: Icon(Icons.copy),
                                 color: Colors.indigo,
-                                onPressed: () {},
+                                onPressed: () {
+                                  if (_textController.text.trim() == "") {
+                                    print('enter text');
+                                  } else {
+                                    print(_textController.text);
+                                    FlutterClipboard.copy(_textController.text)
+                                        .then((value) => print('copied'));
+                                  }
+                                },
                               ),
-                              // IconButton(
-                              //   icon: Icon(Icons.edit),
-                              //   color: Colors.indigo,
-                              //   onPressed: () {},
-                              // ),
+                              IconButton(
+                                  icon: Icon(Icons.delete),
+                                  color: Colors.indigo,
+                                  onPressed: () {
+                                    _beforeResult = '';
+                                    _textController.clear();
+                                    _stopwatch.reset();
+                                  }),
                             ],
                           ),
                         ],
