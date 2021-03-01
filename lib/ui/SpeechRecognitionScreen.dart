@@ -13,14 +13,23 @@ class SpeechRecognitionScreen extends StatefulWidget {
 }
 
 // const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
-const _SERVER_URL = 'ws://172.23.21.61:9000/api/asr/';
+const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const int _SAMPLE_RATE = 16000;
 
 typedef _Fn = void Function();
 
+String formatTime(int milliseconds) {
+  var secs = milliseconds ~/ 1000;
+  var hours = (secs ~/ 3600).toString().padLeft(2, '0');
+  var minutes = ((secs % 3600) ~/ 60).toString().padLeft(2, '0');
+  var seconds = (secs % 60).toString().padLeft(2, '0');
+  return "$hours:$minutes:$seconds";
+}
+
 class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   // ui
   var _textController = new TextEditingController();
+  Stopwatch _stopwatch = Stopwatch();
 
   // recorder
   bool _recorderIsInited = false;
@@ -32,16 +41,31 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
 
   String _beforeResult = '';
   String _previousResult = '';
+  Timer _timer;
+  // set timer for record voice
 
   @override
   void initState() {
     super.initState();
     _openRecorder();
+    _timer = new Timer.periodic(new Duration(milliseconds: 900), (timer) {
+      setState(() {});
+    });
+  }
+
+  void handleStartStop() {
+    if (_stopwatch.isRunning) {
+      _stopwatch.stop();
+    } else {
+      _stopwatch.start();
+    }
+    setState(() {}); // re-render the page
   }
 
   @override
   void dispose() {
     stopRecorder();
+    _timer.cancel();
     _recorder.closeAudioSession();
     _recorder = null;
 
@@ -83,10 +107,10 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
 
   Future<void> stopRecorder() async {
     await _recorder.stopRecorder();
-
     if (_recordingDataSubscription != null) {
       await _recordingDataSubscription.cancel();
       _recordingDataSubscription = null;
+      _stopwatch.stop();
       // stop web socket
       stopWebSocket();
     }
@@ -106,6 +130,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
         _websocket.sink.add(buffer.data);
       }
     });
+
+    _stopwatch.start();
 
     await _recorder.startRecorder(
       toStream: recordingDataController.sink,
@@ -175,7 +201,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                               color: Colors.indigo,
                             ),
                             Text(
-                              "00:00:00",
+                              formatTime(_stopwatch.elapsedMilliseconds),
                               style: TextStyle(color: Colors.indigo),
                             ),
                           ],
