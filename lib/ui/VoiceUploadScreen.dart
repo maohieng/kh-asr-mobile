@@ -1,100 +1,60 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:lite_rolling_switch/lite_rolling_switch.dart';
-import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
-import 'package:niptict_asr_app/utils/HexColor.dart';
-import 'package:sound_stream/sound_stream.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as status;
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
   _VoiceUploadScreenState createState() => _VoiceUploadScreenState();
 }
 
-// Change this URL to your own
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
-//ws://103.16.63.37:9002/api/asr/
+const int _SAMPLE_RATE = 16000;
 
 class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
-  final channel = IOWebSocketChannel.connect(
-      Uri.parse(_SERVER_URL)); //IOWebSocketChannel.connect(_SERVER_URL);
-  var textController = new TextEditingController();
-  RecorderStream _recorder = RecorderStream();
-  PlayerStream _player = PlayerStream();
+  // ui
+  var _textController = new TextEditingController();
 
-  List<Uint8List> _micChunks = [];
-  bool _isRecording = false;
-  bool _isPlaying = false;
+  // web socket
+  IOWebSocketChannel _websocket;
 
-  StreamSubscription _recorderStatus;
-  StreamSubscription _playerStatus;
-  StreamSubscription _audioStream;
+  String _beforeResult = '';
+  String _previousResult = '';
 
   @override
   void initState() {
     super.initState();
-    initPlugin();
   }
 
   @override
   void dispose() {
-    _recorderStatus?.cancel();
-    _playerStatus?.cancel();
-    _audioStream?.cancel();
     super.dispose();
+    if (_websocket != null) {
+      _websocket.sink?.close();
+    }
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlugin() async {
-    //var channel = IOWebSocketChannel.connect(_SERVER_URL);
-    //================= For streaming voice to Server ===================
-    channel.stream.listen((event) async {
-      print(event);
-      if (_isPlaying) _player.writeChunk(event);
-    });
+  Future<void> startWebSocket() async {
+    _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
 
-    _audioStream = _recorder.audioStream.listen((data) {
-      channel.sink.add(data);
-    });
-
-    _recorderStatus = _recorder.status.listen((status) {
-      if (mounted)
-        setState(() {
-          _isRecording = status == SoundStreamStatus.Playing;
-        });
-    });
-
-    _audioStream = _recorder.audioStream.listen((data) {
-      if (_isPlaying) {
-        _player.writeChunk(data);
-        //print(data);
+    _websocket.stream.listen((message) {
+      if (message == '') {
+        if (_beforeResult != '') {
+          _previousResult += _beforeResult + ' ';
+        }
       } else {
-        setState(() {
-          textController.text = data.toString();
-        });
-        _micChunks.add(data);
-        //print(data);
-
+        _textController.text = _previousResult + message;
+        setState(() {});
       }
-    });
 
-    _playerStatus = _player.status.listen((status) {
-      if (mounted)
-        setState(() {
-          _isPlaying = status == SoundStreamStatus.Playing;
-          print(status);
-        });
+      _beforeResult = message;
     });
-
-    await Future.wait([
-      _recorder.initialize(),
-      _player.initialize(),
-    ]);
   }
+
+  Future<void> stopWebSocket() async {
+    await _websocket.sink.close();
+  }
+
+  void openFilePicker() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +77,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                       child: Container(
                         child: SingleChildScrollView(
                           child: TextField(
-                            controller: textController,
+                            controller: _textController,
                             maxLines: null,
                             decoration: InputDecoration(
                               border: InputBorder.none,
@@ -162,7 +122,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                               IconButton(
                                 icon: Icon(Icons.upload_file),
                                 color: Colors.indigo,
-                                onPressed: () {},
+                                onPressed: openFilePicker,
                               ),
                             ],
                           ),
