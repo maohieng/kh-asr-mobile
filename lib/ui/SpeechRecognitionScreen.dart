@@ -17,12 +17,16 @@ const int _SAMPLE_RATE = 16000;
 typedef _Fn = void Function();
 
 class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
-  bool _mRecorderIsInited = false;
-  FlutterSoundRecorder _mRecorder = FlutterSoundRecorder();
-  StreamSubscription _mRecordingDataSubscription;
-
-  final channel = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
+  // ui
   var textController = new TextEditingController();
+
+  // recorder
+  bool _recorderIsInited = false;
+  FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  StreamSubscription _recordingDataSubscription;
+
+  // web socket
+  IOWebSocketChannel _websocket;
 
   @override
   void initState() {
@@ -33,10 +37,26 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   @override
   void dispose() {
     stopRecorder();
-    _mRecorder.closeAudioSession();
-    _mRecorder = null;
+    _recorder.closeAudioSession();
+    _recorder = null;
 
+    _websocket.sink?.close();
     super.dispose();
+  }
+
+  Future<void> startWebSocket() async {
+    _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
+
+    _websocket.stream.listen((message) {
+      if (message != '') {
+        print('--------------> Recieving data to server');
+        print(message);
+      }
+    });
+  }
+
+  Future<void> stopWebSocket() async {
+    await _websocket.sink.close();
   }
 
   Future<void> _openRecorder() async {
@@ -44,33 +64,39 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Microphone permission not granted');
     }
-    await _mRecorder.openAudioSession();
+    await _recorder.openAudioSession();
     setState(() {
-      _mRecorderIsInited = true;
+      _recorderIsInited = true;
     });
   }
 
   Future<void> stopRecorder() async {
-    await _mRecorder.stopRecorder();
-    if (_mRecordingDataSubscription != null) {
-      await _mRecordingDataSubscription.cancel();
-      _mRecordingDataSubscription = null;
+    await _recorder.stopRecorder();
+
+    if (_recordingDataSubscription != null) {
+      await _recordingDataSubscription.cancel();
+      _recordingDataSubscription = null;
+      // stop web socket
+      stopWebSocket();
     }
   }
 
   Future<void> record() async {
-    assert(_mRecorderIsInited);
+    assert(_recorderIsInited);
+
+    // start web socket
+    startWebSocket();
 
     var recordingDataController = StreamController<Food>();
 
-    _mRecordingDataSubscription =
+    _recordingDataSubscription =
         recordingDataController.stream.listen((buffer) {
       if (buffer is FoodData) {
-        print(buffer.data);
+        _websocket.sink.add(buffer.data);
       }
     });
 
-    await _mRecorder.startRecorder(
+    await _recorder.startRecorder(
       toStream: recordingDataController.sink,
       codec: Codec.pcm16,
       numChannels: 1,
@@ -81,10 +107,10 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   }
 
   _Fn getRecorderFn() {
-    if (!_mRecorderIsInited) {
+    if (!_recorderIsInited) {
       return null;
     }
-    return _mRecorder.isStopped
+    return _recorder.isStopped
         ? record
         : () {
             stopRecorder().then((value) => setState(() {}));
@@ -175,7 +201,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
           onTap: getRecorderFn(),
           child: Container(
             height: 90,
-            child: _mRecorder.isRecording == false
+            child: _recorder.isRecording == false
                 ? Image.asset(
                     'assets/images/microphone_2_2.png',
                     fit: BoxFit.contain,
