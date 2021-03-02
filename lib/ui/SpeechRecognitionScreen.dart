@@ -6,6 +6,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:clipboard/clipboard.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SpeechRecognitionScreen extends StatefulWidget {
   @override
@@ -42,10 +43,64 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   String _previousResult = '';
   Timer _timer;
   // set timer for record voice
+  FToast fToast;
+  _showToastCopy() {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: Colors.blue,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check),
+          SizedBox(
+            width: 12.0,
+          ),
+          Text("អត្ថបទត្រូវបានចម្លង"),
+        ],
+      ),
+    );
+
+    fToast.showToast(
+      child: toast,
+      gravity: ToastGravity.CENTER,
+      toastDuration: Duration(seconds: 2),
+    );
+  }
+
+  _showToastDelete() {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: Colors.blue,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check),
+          SizedBox(
+            width: 12.0,
+          ),
+          Text("អត្ថបទត្រូវបានលុប"),
+        ],
+      ),
+    );
+
+    fToast.showToast(
+      child: toast,
+      gravity: ToastGravity.CENTER,
+      toastDuration: Duration(seconds: 2),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
+    fToast = FToast();
+    fToast.init(context);
     _openRecorder();
     _timer = new Timer.periodic(new Duration(milliseconds: 900), (timer) {
       setState(() {});
@@ -215,6 +270,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                     FlutterClipboard.copy(_textController.text)
                                         .then((value) => print('copied'));
                                   }
+                                  _showToastCopy();
                                 },
                               ),
                               IconButton(
@@ -225,6 +281,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                     _previousResult = '';
                                     _textController.clear();
                                     _stopwatch.reset();
+                                    _showToastDelete();
                                   }),
                             ],
                           ),
