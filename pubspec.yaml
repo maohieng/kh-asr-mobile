@@ -36,6 +36,8 @@ dependencies:
   flutter_sound: ^7.7.0+1
   permission_handler: ^5.0.1
   clipboard: ^0.1.2+8
+  file_picker: 2.0.7
+  chunked_stream: ^1.2.0
 
 dev_dependencies:
   flutter_test:

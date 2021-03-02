@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:chunked_stream/chunked_stream.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
@@ -19,7 +22,10 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
 
   String _beforeResult = '';
   String _previousResult = '';
-
+  File _audioFile;
+  FilePickerResult _path_file;
+  String _file_name = '';
+  FlutterSoundPlayer myPlayer = FlutterSoundPlayer();
   @override
   void initState() {
     super.initState();
@@ -54,7 +60,36 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     await _websocket.sink.close();
   }
 
-  void openFilePicker() async {}
+  Future<void> _sendMessage(String filePath) async {
+    final reader = ChunkedStreamIterator(File(filePath).openRead());
+    // While the reader has a next byte
+    startWebSocket();
+    while (true) {
+      // read one byte
+      var data = await reader.read(4000);
+      if (data.length == 0) {
+        print('End of file reached');
+        break;
+      }
+      print('next byte: ${data[0]}');
+      _websocket.sink.add(data);
+    }
+    // stopWebSocket();
+  }
+
+  void openFilePicker() async {
+    _path_file = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['wav'],
+    );
+    if (_path_file != null) {
+      _audioFile = File(_path_file.files.single.path);
+      _file_name = _path_file.files.single.name;
+      _sendMessage(_audioFile.path);
+    } else {
+      // User canceled the picker
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +138,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                               color: Colors.indigo,
                             ),
                             Text(
-                              "TheVoiceNIPTICT.wav",
+                              _file_name,
                               style: TextStyle(color: Colors.indigo),
                             ),
                           ],
