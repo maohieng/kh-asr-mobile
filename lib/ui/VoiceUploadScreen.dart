@@ -212,7 +212,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
           fit: BoxFit.contain,
           height: 62,
           width: 62,
-          onPressed: () {},
         ),
         Padding(
           padding: const EdgeInsets.only(top: 2),
