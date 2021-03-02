@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -44,14 +45,13 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
 
   @override
   void dispose() {
+    super.dispose();
     _mPlayer.closeAudioSession();
     _mPlayer = null;
-    super.dispose();
     if (_websocket != null) {
       _websocket.sink?.close();
     }
   }
-  // -------  Here is the code to playback a remote file -----------------------
 
   Future play() async {
     await _mPlayer.startPlayerFromStream(
@@ -65,33 +65,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     }
   }
 
-  // Future<void> feedHim(Uint8List buffer) async {
-  //   var lnData = 0;
-  //   var totalLength = buffer.length;
-  //   while (totalLength > 0 && !_mPlayer.isStopped) {
-  //     var bsize = totalLength > tBlockSize ? tBlockSize : totalLength;
-  //     await _mPlayer
-  //         .feedFromStream(buffer.sublist(lnData, lnData + bsize)); // await !!!!
-  //     lnData += bsize;
-  //     totalLength -= bsize;
-  //   }
-  // }
-
-  // void play() async {
-  //   assert(_mPlayerIsInited && _mPlayer.isStopped);
-  //   await _mPlayer.startPlayerFromStream(
-  //     codec: Codec.pcm16,
-  //     numChannels: 1,
-  //     sampleRate: _SAMPLE_RATE,
-  //   );
-  //   setState(() {});
-  // }
-
-  // Future<void> stopPlayer() async {
-  //   if (_mPlayer != null) {
-  //     await _mPlayer.stopPlayer();
-  //   }
-  // }
+  // -------  Here is the code to playback a remote file -----------------------
 
   Future<void> startWebSocket() async {
     _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
@@ -115,12 +89,16 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   }
 
   Future<void> _sendMessage(String filePath) async {
+    _beforeResult = '';
+    _previousResult = '';
     final bufferedStream =
         bufferChunkedStream(File(filePath).openRead(), bufferSize: tBlockSize);
     final iterator = ChunkedStreamIterator(bufferedStream);
     // While the reader has a next byte
-    play();
+    await play();
+    log("voice: start");
     startWebSocket();
+    var databyte;
     while (true) {
       // read one byte
       var data = await iterator.read(tBlockSize);
@@ -129,13 +107,11 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         break;
       }
       print('next byte: ${data[0]}');
-      var databyte = Uint8List.fromList(data).buffer.asUint8List();
-      // await play(databyte);
+      databyte = Uint8List.fromList(data).buffer.asUint8List();
       await _mPlayer.feedFromStream(databyte);
       _websocket.sink.add(data);
     }
-    await _mPlayer.stopPlayer();
-    stopWebSocket();
+    await stopPlayer();
   }
 
   void openFilePicker() async {
@@ -236,6 +212,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
           fit: BoxFit.contain,
           height: 62,
           width: 62,
+          onPressed: () {},
         ),
         Padding(
           padding: const EdgeInsets.only(top: 2),
