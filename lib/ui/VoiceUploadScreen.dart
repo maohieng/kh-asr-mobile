@@ -4,6 +4,8 @@ import 'package:web_socket_channel/io.dart';
 import 'package:chunked_stream/chunked_stream.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'dart:typed_data' show Uint8List;
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
@@ -12,6 +14,9 @@ class VoiceUploadScreen extends StatefulWidget {
 
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const int _SAMPLE_RATE = 16000;
+
+///
+const int tBlockSize = 4000;
 
 class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   // ui
@@ -23,21 +28,70 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   String _beforeResult = '';
   String _previousResult = '';
   File _audioFile;
-  FilePickerResult _path_file;
-  String _file_name = '';
-  FlutterSoundPlayer myPlayer = FlutterSoundPlayer();
+  FilePickerResult _pathFile;
+  String _fileName = '';
+  FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
+  bool _mPlayerIsInited = false;
   @override
   void initState() {
     super.initState();
+    _mPlayer.openAudioSession().then((value) {
+      setState(() {
+        _mPlayerIsInited = true;
+      });
+    });
   }
 
   @override
   void dispose() {
+    _mPlayer.closeAudioSession();
+    _mPlayer = null;
     super.dispose();
     if (_websocket != null) {
       _websocket.sink?.close();
     }
   }
+  // -------  Here is the code to playback a remote file -----------------------
+
+  Future play() async {
+    await _mPlayer.startPlayerFromStream(
+        codec: Codec.pcm16, numChannels: 1, sampleRate: _SAMPLE_RATE);
+    setState(() {});
+  }
+
+  Future<void> stopPlayer() async {
+    if (_mPlayer != null) {
+      await _mPlayer.stopPlayer();
+    }
+  }
+
+  // Future<void> feedHim(Uint8List buffer) async {
+  //   var lnData = 0;
+  //   var totalLength = buffer.length;
+  //   while (totalLength > 0 && !_mPlayer.isStopped) {
+  //     var bsize = totalLength > tBlockSize ? tBlockSize : totalLength;
+  //     await _mPlayer
+  //         .feedFromStream(buffer.sublist(lnData, lnData + bsize)); // await !!!!
+  //     lnData += bsize;
+  //     totalLength -= bsize;
+  //   }
+  // }
+
+  // void play() async {
+  //   assert(_mPlayerIsInited && _mPlayer.isStopped);
+  //   await _mPlayer.startPlayerFromStream(
+  //     codec: Codec.pcm16,
+  //     numChannels: 1,
+  //     sampleRate: _SAMPLE_RATE,
+  //   );
+  //   setState(() {});
+  // }
+
+  // Future<void> stopPlayer() async {
+  //   if (_mPlayer != null) {
+  //     await _mPlayer.stopPlayer();
+  //   }
+  // }
 
   Future<void> startWebSocket() async {
     _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
@@ -61,30 +115,37 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   }
 
   Future<void> _sendMessage(String filePath) async {
-    final reader = ChunkedStreamIterator(File(filePath).openRead());
+    final bufferedStream =
+        bufferChunkedStream(File(filePath).openRead(), bufferSize: tBlockSize);
+    final iterator = ChunkedStreamIterator(bufferedStream);
     // While the reader has a next byte
+    play();
     startWebSocket();
     while (true) {
       // read one byte
-      var data = await reader.read(4000);
-      if (data.length == 0) {
+      var data = await iterator.read(tBlockSize);
+      if (data.isEmpty) {
         print('End of file reached');
         break;
       }
       print('next byte: ${data[0]}');
+      var databyte = Uint8List.fromList(data).buffer.asUint8List();
+      // await play(databyte);
+      await _mPlayer.feedFromStream(databyte);
       _websocket.sink.add(data);
     }
-    // stopWebSocket();
+    await _mPlayer.stopPlayer();
+    stopWebSocket();
   }
 
   void openFilePicker() async {
-    _path_file = await FilePicker.platform.pickFiles(
+    _pathFile = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['wav'],
     );
-    if (_path_file != null) {
-      _audioFile = File(_path_file.files.single.path);
-      _file_name = _path_file.files.single.name;
+
+    if (_pathFile != null) {
+      _audioFile = File(_pathFile.files.single.path);
       _sendMessage(_audioFile.path);
     } else {
       // User canceled the picker
@@ -138,7 +199,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                               color: Colors.indigo,
                             ),
                             Text(
-                              _file_name,
+                              _fileName,
                               style: TextStyle(color: Colors.indigo),
                             ),
                           ],
@@ -149,11 +210,11 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                           ButtonBar(
                             //alignment: MainAxisAlignment.end,
                             children: [
-                              // IconButton(
-                              //   icon: Icon(Icons.copy),
-                              //   color: Colors.indigo,
-                              //   onPressed: () {},
-                              // ),
+                              IconButton(
+                                icon: Icon(Icons.copy),
+                                color: Colors.indigo,
+                                onPressed: () {},
+                              ),
                               IconButton(
                                 icon: Icon(Icons.upload_file),
                                 color: Colors.indigo,
@@ -178,7 +239,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Text(""),
+          child: Text("Testing"),
         ),
       ],
     );
