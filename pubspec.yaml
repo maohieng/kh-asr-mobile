@@ -38,6 +38,7 @@ dependencies:
   clipboard: ^0.1.2+8
   file_picker: 2.0.7
   chunked_stream: ^1.2.0
+  fluttertoast: ^7.1.8
 
 dev_dependencies:
   flutter_test:
