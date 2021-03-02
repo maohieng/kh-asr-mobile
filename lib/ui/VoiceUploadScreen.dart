@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:typed_data' show Uint8List;
+import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class VoiceUploadScreen extends StatefulWidget {
 
 const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const int _SAMPLE_RATE = 16000;
+typedef _Fn = void Function();
 
 ///
 const int tBlockSize = 4000;
@@ -33,6 +35,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   String _fileName = '';
   FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
   bool _mPlayerIsInited = false;
+  bool btn_clicked = false;
   @override
   void initState() {
     super.initState();
@@ -88,6 +91,26 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     await _websocket.sink.close();
   }
 
+  _Fn playStreaming() {
+    if (_pathFile != null) {
+      _audioFile = File(_pathFile.files.single.path);
+      // _sendMessage(_audioFile.path);
+      return _mPlayer.isPlaying == true
+          ? () {
+              btn_clicked = false;
+              stopPlayer().then((value) => setState(() {}));
+              stopWebSocket();
+            }
+          : () {
+              _textController.text = "";
+              btn_clicked = true;
+              _sendMessage(_audioFile.path).then((value) => setState(() {}));
+            };
+    } else {
+      return null;
+    }
+  }
+
   Future<void> _sendMessage(String filePath) async {
     _beforeResult = '';
     _previousResult = '';
@@ -112,6 +135,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
       _websocket.sink.add(data);
     }
     await stopPlayer();
+    btn_clicked = false;
   }
 
   void openFilePicker() async {
@@ -119,13 +143,9 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
       type: FileType.custom,
       allowedExtensions: ['wav'],
     );
-
-    if (_pathFile != null) {
-      _audioFile = File(_pathFile.files.single.path);
-      _sendMessage(_audioFile.path);
-    } else {
-      // User canceled the picker
-    }
+    _fileName = _pathFile.files.single.name;
+    _textController.text = "";
+    setState(() {});
   }
 
   @override
@@ -207,15 +227,35 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
             ),
           ),
         ),
-        Image.asset(
-          'assets/images/upload2.png',
-          fit: BoxFit.contain,
-          height: 62,
-          width: 62,
+        // Image.asset(
+        //   'assets/images/upload2.png',
+        //   fit: BoxFit.contain,
+        //   height: 62,
+        //   width: 62,
+        // ),
+        // Padding(
+        //   padding: const EdgeInsets.only(top: 2),
+        //   child: Text("Testing"),
+        // ),
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: playStreaming(),
+          child: Container(
+            height: 90,
+            child: btn_clicked == false
+                ? Image.asset(
+                    'assets/images/microphone_2_3.png',
+                    fit: BoxFit.contain,
+                    height: 62,
+                    width: 62,
+                  )
+                : RipplesAnimation(
+                    color: Colors.red, icon: Icons.audiotrack, child: null),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Text("Testing"),
+          child: Text(""),
         ),
       ],
     );

@@ -1,16 +1,14 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math show sin, pi, sqrt;
 import 'package:flutter/animation.dart';
 
-
 class CirclePainter extends CustomPainter {
   CirclePainter(
-      this._animation, {
-        @required this.color,
-      }) : super(repaint: _animation);
+    this._animation, {
+    @required this.color,
+  }) : super(repaint: _animation);
   final Color color;
   final Animation<double> _animation;
   void circle(Canvas canvas, Rect rect, double value) {
@@ -22,6 +20,7 @@ class CirclePainter extends CustomPainter {
     final Paint paint = Paint()..color = _color;
     canvas.drawCircle(rect.center, radius, paint);
   }
+
   @override
   void paint(Canvas canvas, Size size) {
     final Rect rect = Rect.fromLTRB(0.0, 0.0, size.width, size.height);
@@ -29,9 +28,11 @@ class CirclePainter extends CustomPainter {
       circle(canvas, rect, wave + _animation.value);
     }
   }
+
   @override
   bool shouldRepaint(CirclePainter oldDelegate) => true;
 }
+
 class CurveWave extends Curve {
   const CurveWave();
   @override
@@ -42,18 +43,27 @@ class CurveWave extends Curve {
     return math.sin(t * math.pi);
   }
 }
+
 class RipplesAnimation extends StatefulWidget {
-  const RipplesAnimation({Key key, this.size = 80.0, this.color = Colors.blue,
-    this.onPressed, @required this.child,}) : super(key: key);
+  const RipplesAnimation({
+    Key key,
+    this.size = 80.0,
+    this.color = Colors.blue,
+    this.onPressed,
+    this.icon = Icons.mic,
+    @required this.child,
+  }) : super(key: key);
   final double size;
   final Color color;
   final Widget child;
+  final IconData icon;
   final VoidCallback onPressed;
   @override
   _RipplesAnimationState createState() => _RipplesAnimationState();
 }
 
-class _RipplesAnimationState extends State<RipplesAnimation> with TickerProviderStateMixin {
+class _RipplesAnimationState extends State<RipplesAnimation>
+    with TickerProviderStateMixin {
   AnimationController _controller;
   @override
   void initState() {
@@ -63,11 +73,13 @@ class _RipplesAnimationState extends State<RipplesAnimation> with TickerProvider
       vsync: this,
     )..repeat();
   }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
+
   Widget _button() {
     return Center(
       child: ClipRRect(
@@ -88,8 +100,11 @@ class _RipplesAnimationState extends State<RipplesAnimation> with TickerProvider
                   curve: const CurveWave(),
                 ),
               ),
-              child: Icon(Icons.mic, size: 44,color: Colors.white,)
-          ),
+              child: Icon(
+                widget.icon,
+                size: 44,
+                color: Colors.white,
+              )),
         ),
       ),
     );
