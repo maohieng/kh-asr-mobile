@@ -8,6 +8,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:typed_data' show Uint8List;
 import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
+import 'package:clipboard/clipboard.dart';
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
@@ -27,7 +28,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
 
   // web socket
   IOWebSocketChannel _websocket;
-
   String _beforeResult = '';
   String _previousResult = '';
   File _audioFile;
@@ -36,8 +36,41 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
   bool _mPlayerIsInited = false;
   bool btn_clicked = false;
+
+  FToast fToast;
+  _showToast(String message) {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: Colors.red,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.check,
+            color: Colors.white,
+          ),
+          SizedBox(
+            width: 12.0,
+          ),
+          Text(message, style: TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+
+    fToast.showToast(
+      child: toast,
+      gravity: ToastGravity.CENTER,
+      toastDuration: Duration(seconds: 2),
+    );
+  }
+
   @override
   void initState() {
+    fToast = FToast();
+    fToast.init(context);
     super.initState();
     _mPlayer.openAudioSession().then((value) {
       setState(() {
@@ -107,6 +140,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
               _sendMessage(_audioFile.path).then((value) => setState(() {}));
             };
     } else {
+      // _showToast("សូមមេត្តាជ្រើសរើសឯកសារសម្លេងជាមុន!");
       return null;
     }
   }
@@ -145,6 +179,11 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     );
     _fileName = _pathFile.files.single.name;
     _textController.text = "";
+    if (_pathFile != null) {
+      _showToast("ឯកសារសម្លេងត្រូវបានជ្រើសរើស!");
+    } else {
+      _showToast("ឯកសារសម្លេងមិនត្រឹមត្រូវ!");
+    }
     setState(() {});
   }
 
@@ -171,6 +210,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                           child: TextField(
                             controller: _textController,
                             maxLines: null,
+                            textAlign: TextAlign.justify,
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               hintText: '',
@@ -209,7 +249,16 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                               IconButton(
                                 icon: Icon(Icons.copy),
                                 color: Colors.indigo,
-                                onPressed: () {},
+                                onPressed: () {
+                                  if (_textController.text.trim() == "") {
+                                    print('enter text');
+                                  } else {
+                                    print(_textController.text);
+                                    FlutterClipboard.copy(_textController.text)
+                                        .then((value) => print('copied'));
+                                  }
+                                  _showToast("អត្ថបទត្រូវបានចម្លង");
+                                },
                               ),
                               IconButton(
                                 icon: Icon(Icons.upload_file),

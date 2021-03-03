@@ -23,7 +23,7 @@ class _MainPageState extends State<MainPage> {
               DrawerHeader(
                 child: Center(
                   child: Image.asset(
-                    'assets/images/logo2.png',
+                    'assets/images/KhAsrLogo.png',
                     fit: BoxFit.contain,
                   ),
                 ),
