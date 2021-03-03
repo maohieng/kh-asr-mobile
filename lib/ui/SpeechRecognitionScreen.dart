@@ -44,12 +44,12 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   Timer _timer;
   // set timer for record voice
   FToast fToast;
-  _showToastCopy() {
+  _showToast(String message) {
     Widget toast = Container(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25.0),
-        color: Colors.blue,
+        color: Colors.red,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -58,33 +58,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
           SizedBox(
             width: 12.0,
           ),
-          Text("អត្ថបទត្រូវបានចម្លង"),
-        ],
-      ),
-    );
-
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.CENTER,
-      toastDuration: Duration(seconds: 2),
-    );
-  }
-
-  _showToastDelete() {
-    Widget toast = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Colors.blue,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check),
-          SizedBox(
-            width: 12.0,
-          ),
-          Text("អត្ថបទត្រូវបានលុប"),
+          Text(message)
         ],
       ),
     );
@@ -270,7 +244,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                     FlutterClipboard.copy(_textController.text)
                                         .then((value) => print('copied'));
                                   }
-                                  _showToastCopy();
+                                  _showToast("អត្ថបទត្រូវបានចម្លង");
                                 },
                               ),
                               IconButton(
@@ -281,7 +255,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                     _previousResult = '';
                                     _textController.clear();
                                     _stopwatch.reset();
-                                    _showToastDelete();
+                                    _showToast("អត្ថបទត្រូវបានលុប");
                                   }),
                             ],
                           ),
