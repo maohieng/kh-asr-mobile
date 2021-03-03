@@ -54,11 +54,14 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check, color: Colors.white,),
+          Icon(
+            Icons.check,
+            color: Colors.white,
+          ),
           SizedBox(
             width: 12.0,
           ),
-          Text(message , style: TextStyle(color: Colors.white)),
+          Text(message, style: TextStyle(color: Colors.white)),
         ],
       ),
     );
