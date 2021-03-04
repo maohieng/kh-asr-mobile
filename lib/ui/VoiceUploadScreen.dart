@@ -181,7 +181,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                             textAlign: TextAlign.justify,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: '',
+                              hintText: 'សូមបញ្ចូលឯកសារសំលេង',
                             ),
                             style: TextStyle(fontFamily: "KhCon", fontSize: 16),
                           ),

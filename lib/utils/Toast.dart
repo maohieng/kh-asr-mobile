@@ -25,6 +25,7 @@ showToast(context, String message) {
 
   var fToast = FToast();
   fToast.init(context);
+  fToast.removeCustomToast();
   fToast.showToast(
     child: toast,
     gravity: ToastGravity.CENTER,
@@ -56,6 +57,7 @@ showErrorToast(context, String message) {
 
   var fToast = FToast();
   fToast.init(context);
+  fToast.removeCustomToast();
   fToast.showToast(
     child: toast,
     gravity: ToastGravity.CENTER,
@@ -87,6 +89,7 @@ showWarnningToast(context, String message) {
 
   var fToast = FToast();
   fToast.init(context);
+  fToast.removeCustomToast();
   fToast.showToast(
     child: toast,
     gravity: ToastGravity.CENTER,
