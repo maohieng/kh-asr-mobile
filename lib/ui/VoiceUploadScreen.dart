@@ -9,14 +9,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:typed_data' show Uint8List;
 import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
 import 'package:clipboard/clipboard.dart';
+import '../utils/Common.dart';
+import '../utils/Toast.dart';
 
 class VoiceUploadScreen extends StatefulWidget {
   @override
   _VoiceUploadScreenState createState() => _VoiceUploadScreenState();
 }
 
-const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
-const int _SAMPLE_RATE = 16000;
 typedef _Fn = void Function();
 
 ///
@@ -37,40 +37,8 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   bool _mPlayerIsInited = false;
   bool btn_clicked = false;
 
-  FToast fToast;
-  _showToast(String message) {
-    Widget toast = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Colors.red,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.check,
-            color: Colors.white,
-          ),
-          SizedBox(
-            width: 12.0,
-          ),
-          Text(message, style: TextStyle(color: Colors.white)),
-        ],
-      ),
-    );
-
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.CENTER,
-      toastDuration: Duration(seconds: 2),
-    );
-  }
-
   @override
   void initState() {
-    fToast = FToast();
-    fToast.init(context);
     super.initState();
     _mPlayer.openAudioSession().then((value) {
       setState(() {
@@ -91,7 +59,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
 
   Future play() async {
     await _mPlayer.startPlayerFromStream(
-        codec: Codec.pcm16, numChannels: 1, sampleRate: _SAMPLE_RATE);
+        codec: Codec.pcm16, numChannels: 1, sampleRate: SAMPLE_RATE);
     setState(() {});
   }
 
@@ -104,7 +72,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   // -------  Here is the code to playback a remote file -----------------------
 
   Future<void> startWebSocket() async {
-    _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
+    _websocket = IOWebSocketChannel.connect(Uri.parse(SERVER_URL));
 
     _websocket.stream.listen((message) {
       if (message == '') {
@@ -140,7 +108,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
               _sendMessage(_audioFile.path).then((value) => setState(() {}));
             };
     } else {
-      // _showToast("សូមមេត្តាជ្រើសរើសឯកសារសម្លេងជាមុន!");
+      // showToast(context, "សូមមេត្តាជ្រើសរើសឯកសារសម្លេងជាមុន!");
       return null;
     }
   }
@@ -180,9 +148,9 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     _fileName = _pathFile.files.single.name;
     _textController.text = "";
     if (_pathFile != null) {
-      _showToast("ឯកសារសម្លេងត្រូវបានជ្រើសរើស!");
+      showToast(context, "ឯកសារសម្លេងត្រូវបានជ្រើសរើស!");
     } else {
-      _showToast("ឯកសារសម្លេងមិនត្រឹមត្រូវ!");
+      showToast(context, "ឯកសារសម្លេងមិនត្រឹមត្រូវ!");
     }
     setState(() {});
   }
@@ -257,7 +225,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                                     FlutterClipboard.copy(_textController.text)
                                         .then((value) => print('copied'));
                                   }
-                                  _showToast("អត្ថបទត្រូវបានចម្លង");
+                                  showToast(context, "អត្ថបទត្រូវបានចម្លង");
                                 },
                               ),
                               IconButton(
