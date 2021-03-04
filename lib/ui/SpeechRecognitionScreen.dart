@@ -64,7 +64,6 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
       _webSocketChannel =
           IOWebSocketChannel(await WebSocket.connect(SERVER_URL));
     } catch (e) {
-      showErrorToast(context, "មានបញ្ហាតភ្ជាប់ទៅកាន់ Server");
       return false;
     }
 
@@ -113,8 +112,15 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   Future<void> record() async {
     assert(_recorderIsInited);
 
-    var status = await startWebSocket();
+    var status = await checkInternetConnection();
     if (status == false) {
+      showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
+      return;
+    }
+
+    status = await startWebSocket();
+    if (status == false) {
+      showErrorToast(context, "មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ!");
       return;
     }
 
