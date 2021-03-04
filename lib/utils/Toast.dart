@@ -65,7 +65,7 @@ showErrorToast(context, String message) {
   );
 }
 
-showWarnningToast(context, String message) {
+showWarningToast(context, String message) {
   Widget toast = Container(
     padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
     decoration: BoxDecoration(

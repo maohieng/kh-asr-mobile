@@ -5,7 +5,6 @@ import 'package:web_socket_channel/io.dart';
 import 'package:chunked_stream/chunked_stream.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:typed_data' show Uint8List;
 import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
 import 'package:clipboard/clipboard.dart';
@@ -16,8 +15,6 @@ class VoiceUploadScreen extends StatefulWidget {
   @override
   _VoiceUploadScreenState createState() => _VoiceUploadScreenState();
 }
-
-typedef _Fn = void Function();
 
 ///
 const int tBlockSize = 4000;
@@ -30,31 +27,33 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   IOWebSocketChannel _websocket;
   String _beforeResult = '';
   String _previousResult = '';
+
+  // player
+  FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
+
+  // file
   File _audioFile;
   FilePickerResult _pathFile;
   String _fileName = '';
-  FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
-  bool _mPlayerIsInited = false;
-  bool btn_clicked = false;
+  bool btnClicked = false;
 
   @override
   void initState() {
     super.initState();
     _mPlayer.openAudioSession().then((value) {
-      setState(() {
-        _mPlayerIsInited = true;
-      });
+      setState(() {});
     });
   }
 
   @override
   void dispose() {
-    super.dispose();
     _mPlayer.closeAudioSession();
     _mPlayer = null;
     if (_websocket != null) {
       _websocket.sink?.close();
     }
+
+    super.dispose();
   }
 
   Future play() async {
@@ -92,24 +91,20 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     await _websocket.sink.close();
   }
 
-  _Fn playStreaming() {
+  void playStreaming() {
     if (_pathFile != null) {
       _audioFile = File(_pathFile.files.single.path);
-      // _sendMessage(_audioFile.path);
-      return _mPlayer.isPlaying == true
-          ? () {
-              btn_clicked = false;
-              stopPlayer().then((value) => setState(() {}));
-              stopWebSocket();
-            }
-          : () {
-              _textController.text = "";
-              btn_clicked = true;
-              _sendMessage(_audioFile.path).then((value) => setState(() {}));
-            };
+      if (_mPlayer.isPlaying == true) {
+        btnClicked = false;
+        stopPlayer().then((value) => setState(() {}));
+        stopWebSocket();
+      } else {
+        _textController.text = "";
+        btnClicked = true;
+        _sendMessage(_audioFile.path).then((value) => setState(() {}));
+      }
     } else {
-      // showToast(context, "សូមមេត្តាជ្រើសរើសឯកសារសម្លេងជាមុន!");
-      return null;
+      showWarningToast(context, "សូមមេត្តាជ្រើសរើសឯកសារសម្លេងជាមុន!");
     }
   }
 
@@ -137,7 +132,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
       _websocket.sink.add(data);
     }
     await stopPlayer();
-    btn_clicked = false;
+    btnClicked = false;
   }
 
   void openFilePicker() async {
@@ -256,10 +251,10 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         // ),
         GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: playStreaming(),
+          onTap: playStreaming,
           child: Container(
             height: 90,
-            child: btn_clicked == false
+            child: btnClicked == false
                 ? Image.asset(
                     'assets/images/microphone_2_3.png',
                     fit: BoxFit.contain,
