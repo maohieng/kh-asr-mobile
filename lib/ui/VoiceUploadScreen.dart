@@ -129,20 +129,17 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     // init player
     await initPlayer();
 
-    final bufferedStream =
-        bufferChunkedStream(File(filePath).openRead(), bufferSize: tBlockSize);
+    final bufferedStream = bufferChunkedStream(File(filePath).openRead());
     final iterator = ChunkedStreamIterator(bufferedStream);
 
-    var databyte;
+    var data;
     while (true) {
-      var data = await iterator.read(tBlockSize);
+      data = await iterator.read(tBlockSize);
       if (data.isEmpty) {
         print('End of file reached');
         break;
       }
-      print('next byte: ${data[0]}');
-      databyte = Uint8List.fromList(data).buffer.asUint8List();
-      await _mPlayer.feedFromStream(databyte);
+      await _mPlayer.feedFromStream(Uint8List.fromList(data));
       _webSocketChannel.sink.add(data);
     }
 
