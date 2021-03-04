@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:clipboard/clipboard.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import '../utils/Common.dart';
+import '../utils/Toast.dart';
 
 class SpeechRecognitionScreen extends StatefulWidget {
   @override
@@ -14,17 +16,7 @@ class SpeechRecognitionScreen extends StatefulWidget {
       _SpeechRecognitionScreenState();
 }
 
-const _SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
-const int _SAMPLE_RATE = 16000;
 typedef _Fn = void Function();
-
-String formatTime(int milliseconds) {
-  var secs = milliseconds ~/ 1000;
-  var hours = (secs ~/ 3600).toString().padLeft(2, '0');
-  var minutes = ((secs % 3600) ~/ 60).toString().padLeft(2, '0');
-  var seconds = (secs % 60).toString().padLeft(2, '0');
-  return "$hours:$minutes:$seconds";
-}
 
 class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   // ui
@@ -37,47 +29,17 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   StreamSubscription _recordingDataSubscription;
 
   // web socket
-  IOWebSocketChannel _websocket;
+  IOWebSocketChannel _webSocketChannel;
 
   String _beforeResult = '';
   String _previousResult = '';
-  Timer _timer;
-  // set timer for record voice
-  FToast fToast;
-  _showToast(String message) {
-    Widget toast = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Colors.red,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.check,
-            color: Colors.white,
-          ),
-          SizedBox(
-            width: 12.0,
-          ),
-          Text(message, style: TextStyle(color: Colors.white)),
-        ],
-      ),
-    );
 
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.CENTER,
-      toastDuration: Duration(seconds: 2),
-    );
-  }
+  // set timer for record voice
+  Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    fToast = FToast();
-    fToast.init(context);
     _openRecorder();
     _timer = new Timer.periodic(new Duration(milliseconds: 900), (timer) {
       setState(() {});
@@ -91,16 +53,22 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     _recorder.closeAudioSession();
     _recorder = null;
 
-    if (_websocket != null) {
-      _websocket.sink?.close();
+    if (_webSocketChannel != null) {
+      _webSocketChannel.sink?.close();
     }
     super.dispose();
   }
 
-  Future<void> startWebSocket() async {
-    _websocket = IOWebSocketChannel.connect(Uri.parse(_SERVER_URL));
+  Future<bool> startWebSocket() async {
+    try {
+      _webSocketChannel =
+          IOWebSocketChannel(await WebSocket.connect(SERVER_URL));
+    } catch (e) {
+      showErrorToast(context, "មានបញ្ហាតភ្ជាប់ទៅកាន់ Server");
+      return false;
+    }
 
-    _websocket.stream.listen((message) {
+    _webSocketChannel.stream.listen((message) {
       if (message == '') {
         if (_beforeResult != '') {
           _previousResult += _beforeResult + ' ';
@@ -112,10 +80,12 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
 
       _beforeResult = message;
     });
+
+    return true;
   }
 
   Future<void> stopWebSocket() async {
-    await _websocket.sink.close();
+    await _webSocketChannel.sink.close();
   }
 
   Future<void> _openRecorder() async {
@@ -143,15 +113,17 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   Future<void> record() async {
     assert(_recorderIsInited);
 
-    // start web socket
-    startWebSocket();
+    var status = await startWebSocket();
+    if (status == false) {
+      return;
+    }
 
     var recordingDataController = StreamController<Food>();
 
     _recordingDataSubscription =
         recordingDataController.stream.listen((buffer) {
       if (buffer is FoodData) {
-        _websocket.sink.add(buffer.data);
+        _webSocketChannel.sink.add(buffer.data);
       }
     });
 
@@ -161,7 +133,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
       toStream: recordingDataController.sink,
       codec: Codec.pcm16,
       numChannels: 1,
-      sampleRate: _SAMPLE_RATE,
+      sampleRate: SAMPLE_RATE,
     );
 
     setState(() {});
@@ -247,7 +219,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                     FlutterClipboard.copy(_textController.text)
                                         .then((value) => print('copied'));
                                   }
-                                  _showToast("អត្ថបទត្រូវបានចម្លង");
+
+                                  showToast(context, "អត្ថបទត្រូវបានចម្លង");
                                 },
                               ),
                               IconButton(
@@ -258,7 +231,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                     _previousResult = '';
                                     _textController.clear();
                                     _stopwatch.reset();
-                                    _showToast("អត្ថបទត្រូវបានលុប");
+
+                                    showToast(context, "អត្ថបទត្រូវបានលុប");
                                   }),
                             ],
                           ),
