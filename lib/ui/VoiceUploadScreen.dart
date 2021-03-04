@@ -24,7 +24,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   var _textController = new TextEditingController();
 
   // web socket
-  IOWebSocketChannel _websocket;
+  IOWebSocketChannel _webSocketChannel;
   String _beforeResult = '';
   String _previousResult = '';
 
@@ -35,7 +35,6 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   File _audioFile;
   FilePickerResult _pathFile;
   String _fileName = '';
-  bool btnClicked = false;
 
   @override
   void initState() {
@@ -49,14 +48,15 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   void dispose() {
     _mPlayer.closeAudioSession();
     _mPlayer = null;
-    if (_websocket != null) {
-      _websocket.sink?.close();
+
+    if (_webSocketChannel != null) {
+      _webSocketChannel.sink?.close();
     }
 
     super.dispose();
   }
 
-  Future play() async {
+  Future initPlayer() async {
     await _mPlayer.startPlayerFromStream(
         codec: Codec.pcm16, numChannels: 1, sampleRate: SAMPLE_RATE);
     setState(() {});
@@ -68,12 +68,15 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     }
   }
 
-  // -------  Here is the code to playback a remote file -----------------------
+  Future<bool> startWebSocket() async {
+    try {
+      _webSocketChannel =
+          IOWebSocketChannel(await WebSocket.connect(SERVER_URL));
+    } catch (e) {
+      return false;
+    }
 
-  Future<void> startWebSocket() async {
-    _websocket = IOWebSocketChannel.connect(Uri.parse(SERVER_URL));
-
-    _websocket.stream.listen((message) {
+    _webSocketChannel.stream.listen((message) {
       if (message == '') {
         if (_beforeResult != '') {
           _previousResult += _beforeResult + ' ';
@@ -85,22 +88,33 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
 
       _beforeResult = message;
     });
+
+    return true;
   }
 
   Future<void> stopWebSocket() async {
-    await _websocket.sink.close();
+    await _webSocketChannel.sink.close();
   }
 
-  void playStreaming() {
+  Future<void> playStreaming() async {
     if (_pathFile != null) {
       _audioFile = File(_pathFile.files.single.path);
       if (_mPlayer.isPlaying == true) {
-        btnClicked = false;
         stopPlayer().then((value) => setState(() {}));
         stopWebSocket();
       } else {
+        var status = await checkInternetConnection();
+        if (status == false) {
+          showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
+          return;
+        }
+
+        status = await startWebSocket();
+        if (status == false) {
+          showErrorToast(context, "មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ!");
+          return;
+        }
         _textController.text = "";
-        btnClicked = true;
         _sendMessage(_audioFile.path).then((value) => setState(() {}));
       }
     } else {
@@ -111,16 +125,16 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   Future<void> _sendMessage(String filePath) async {
     _beforeResult = '';
     _previousResult = '';
+
+    // init player
+    await initPlayer();
+
     final bufferedStream =
         bufferChunkedStream(File(filePath).openRead(), bufferSize: tBlockSize);
     final iterator = ChunkedStreamIterator(bufferedStream);
-    // While the reader has a next byte
-    await play();
-    log("voice: start");
-    startWebSocket();
+
     var databyte;
     while (true) {
-      // read one byte
       var data = await iterator.read(tBlockSize);
       if (data.isEmpty) {
         print('End of file reached');
@@ -129,10 +143,11 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
       print('next byte: ${data[0]}');
       databyte = Uint8List.fromList(data).buffer.asUint8List();
       await _mPlayer.feedFromStream(databyte);
-      _websocket.sink.add(data);
+      _webSocketChannel.sink.add(data);
     }
+
+    // stop player
     await stopPlayer();
-    btnClicked = false;
   }
 
   void openFilePicker() async {
@@ -254,7 +269,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
           onTap: playStreaming,
           child: Container(
             height: 90,
-            child: btnClicked == false
+            child: _mPlayer.isPlaying == false
                 ? Image.asset(
                     'assets/images/microphone_2_3.png',
                     fit: BoxFit.contain,
