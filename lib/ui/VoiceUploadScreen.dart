@@ -267,13 +267,13 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
             height: 90,
             child: _mPlayer.isPlaying == false
                 ? Image.asset(
-                    'assets/images/microphone_2_3.png',
+                    'assets/images/microphone_2_pro.png',
                     fit: BoxFit.contain,
                     height: 62,
                     width: 62,
                   )
                 : RipplesAnimation(
-                    color: Colors.red, icon: Icons.audiotrack, child: null),
+                    color: Colors.red, icon: Icons.stop, child: null),
           ),
         ),
         Padding(

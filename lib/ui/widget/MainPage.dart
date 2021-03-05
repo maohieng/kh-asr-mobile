@@ -14,7 +14,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   var switch_screen = 1;
-
+  var _titleBar = 'កម្មវិធីបំលែងសំលេងទៅជាអត្ថបទ';
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -38,6 +38,7 @@ class _MainPageState extends State<MainPage> {
                   title: Text('បំលែងសំឡេងនិយាយ'),
                   onTap: () {
                     setState(() {
+                      _titleBar = 'កម្មវិធីបំលែងសំលេងទៅជាអត្ថបទ';
                       switch_screen = 1;
                     });
                     Navigator.of(context).pop();
@@ -47,6 +48,7 @@ class _MainPageState extends State<MainPage> {
                   title: Text('បំលែងឯកសារនិយាយ'),
                   onTap: () {
                     setState(() {
+                      _titleBar = 'កម្មវិធីបំលែងឯកសារនិយាយ';
                       switch_screen = 2;
                     });
                     Navigator.of(context).pop();
@@ -56,6 +58,7 @@ class _MainPageState extends State<MainPage> {
                   title: Text('អំពីយើង'),
                   onTap: () {
                     setState(() {
+                      _titleBar = 'អំពីយើង';
                       switch_screen = 3;
                     });
                     Navigator.of(context).pop();
@@ -69,7 +72,7 @@ class _MainPageState extends State<MainPage> {
             children: [
               Container(
                   padding: const EdgeInsets.all(5.0),
-                  child: Text('កម្មវិធីបំលែងសំលេងទៅជាអត្ថបទ',
+                  child: Text(_titleBar,
                       style: TextStyle(fontFamily: "KhMuol", fontSize: 14))),
             ],
           ),
