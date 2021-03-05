@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:niptict_asr_app/ui/AnimationScreen.dart';
-import 'package:niptict_asr_app/ui/widget/MainPage.dart';
+import 'package:khmerasr/ui/AnimationScreen.dart';
+import 'package:khmerasr/ui/widget/MainPage.dart';
 
 void main() => runApp(MyApp());
 

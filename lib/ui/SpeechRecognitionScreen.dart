@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
+import 'package:khmerasr/ui/widget/RipplesAnimation.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:niptict_asr_app/ui/SpeechRecognitionScreen.dart';
-import 'package:niptict_asr_app/ui/widget/MainPage.dart';
+import 'package:khmerasr/ui/SpeechRecognitionScreen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override

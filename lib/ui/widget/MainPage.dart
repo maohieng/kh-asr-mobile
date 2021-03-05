@@ -1,8 +1,8 @@
 //UploadVoice
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:niptict_asr_app/ui/SpeechRecognitionScreen.dart';
-import 'package:niptict_asr_app/utils/HexColor.dart';
+import 'package:khmerasr/ui/SpeechRecognitionScreen.dart';
+import 'package:khmerasr/utils/HexColor.dart';
 
 import '../VoiceUploadScreen.dart';
 import '../AboutUsScreen.dart';

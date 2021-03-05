@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -6,7 +5,7 @@ import 'package:chunked_stream/chunked_stream.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'dart:typed_data' show Uint8List;
-import 'package:niptict_asr_app/ui/widget/RipplesAnimation.dart';
+import 'package:khmerasr/ui/widget/RipplesAnimation.dart';
 import 'package:clipboard/clipboard.dart';
 import '../utils/Common.dart';
 import '../utils/Toast.dart';

@@ -1,4 +1,4 @@
-package niptict.edu.niptict_asr_app
+package kh.edu.cadt.khmerasr
 
 import io.flutter.embedding.android.FlutterActivity
 
