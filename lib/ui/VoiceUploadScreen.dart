@@ -117,7 +117,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         _sendMessage(_audioFile.path).then((value) => setState(() {}));
       }
     } else {
-      showWarningToast(context, "សូមមេត្តាជ្រើសរើសឯកសារសម្លេងជាមុន!");
+      showWarningToast(context, "សូមជ្រើសរើសឯកសារសម្លេងជាមុន!");
     }
   }
 
@@ -273,7 +273,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                     width: 62,
                   )
                 : RipplesAnimation(
-                    color: Colors.red, icon: Icons.stop, child: null),
+                    color: Colors.red, icon: Icons.not_interested, child: null),
           ),
         ),
         Padding(

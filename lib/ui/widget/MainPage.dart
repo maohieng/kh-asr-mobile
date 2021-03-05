@@ -14,7 +14,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   var switch_screen = 1;
-  var _titleBar = 'កម្មវិធីបំលែងសំលេងទៅជាអត្ថបទ';
+  var _titleBar = 'បំលែងសំលេងនិយាយទៅជាអត្ថបទ';
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -35,20 +35,20 @@ class _MainPageState extends State<MainPage> {
               ),
               ListTile(
                   leading: Icon(Icons.keyboard_voice, color: Colors.indigo),
-                  title: Text('បំលែងសំឡេងនិយាយ'),
+                  title: Text('បំលែងសំលេងនិយាយ'),
                   onTap: () {
                     setState(() {
-                      _titleBar = 'កម្មវិធីបំលែងសំលេងទៅជាអត្ថបទ';
+                      _titleBar = 'បំលែងសំលេងនិយាយទៅជាអត្ថបទ';
                       switch_screen = 1;
                     });
                     Navigator.of(context).pop();
                   }),
               ListTile(
                   leading: Icon(Icons.upload_file, color: Colors.indigo),
-                  title: Text('បំលែងឯកសារនិយាយ'),
+                  title: Text('បំលែងឯកសារសំលេង'),
                   onTap: () {
                     setState(() {
-                      _titleBar = 'កម្មវិធីបំលែងឯកសារនិយាយ';
+                      _titleBar = 'បំលែងឯកសារសំលេងទៅជាអត្ថបទ';
                       switch_screen = 2;
                     });
                     Navigator.of(context).pop();
