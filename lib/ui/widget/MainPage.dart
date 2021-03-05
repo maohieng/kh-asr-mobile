@@ -35,20 +35,20 @@ class _MainPageState extends State<MainPage> {
               ),
               ListTile(
                   leading: Icon(Icons.keyboard_voice, color: Colors.indigo),
-                  title: Text('បំលែងសំលេងនិយាយ'),
+                  title: Text('បំលែងសំឡេងនិយាយ'),
                   onTap: () {
                     setState(() {
-                      _titleBar = 'បំលែងសំលេងនិយាយទៅជាអត្ថបទ';
+                      _titleBar = 'បំលែងសំឡេងនិយាយទៅជាអត្ថបទ';
                       switch_screen = 1;
                     });
                     Navigator.of(context).pop();
                   }),
               ListTile(
                   leading: Icon(Icons.upload_file, color: Colors.indigo),
-                  title: Text('បំលែងឯកសារសំលេង'),
+                  title: Text('បំលែងឯកសារសំឡេង'),
                   onTap: () {
                     setState(() {
-                      _titleBar = 'បំលែងឯកសារសំលេងទៅជាអត្ថបទ';
+                      _titleBar = 'បំលែងឯកសារសំឡេងទៅជាអត្ថបទ';
                       switch_screen = 2;
                     });
                     Navigator.of(context).pop();

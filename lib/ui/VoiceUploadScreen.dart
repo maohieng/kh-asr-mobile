@@ -117,7 +117,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         _sendMessage(_audioFile.path).then((value) => setState(() {}));
       }
     } else {
-      showWarningToast(context, "សូមជ្រើសរើសឯកសារសម្លេងជាមុន!");
+      showWarningToast(context, "សូមជ្រើសរើសឯកសារសំឡេងជាមុន!");
     }
   }
 
@@ -154,9 +154,9 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     _fileName = _pathFile.files.single.name;
     _textController.text = "";
     if (_pathFile != null) {
-      showToast(context, "ឯកសារសម្លេងត្រូវបានជ្រើសរើស!");
+      showToast(context, "ឯកសារសំឡេងត្រូវបានជ្រើសរើស!");
     } else {
-      showToast(context, "ឯកសារសម្លេងមិនត្រឹមត្រូវ!");
+      showToast(context, "ឯកសារសំឡេងមិនត្រឹមត្រូវ!");
     }
     setState(() {});
   }
@@ -187,7 +187,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
                             textAlign: TextAlign.justify,
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: 'សូមបញ្ចូលឯកសារសំលេង',
+                              hintText: 'សូមបញ្ចូលឯកសារសំឡេង',
                             ),
                             style: TextStyle(fontFamily: "KhCon", fontSize: 16),
                           ),

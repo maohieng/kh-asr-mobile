@@ -76,7 +76,7 @@ class _AnimationScreenState extends State<AnimationScreen>
                       SizedBox(
                         height: 20,
                       ),
-                      Text('កម្មវិធីបំលែងសំលេងទៅជាអត្ថបទ',
+                      Text('កម្មវិធីបំលែងសំឡេងទៅជាអត្ថបទ',
                           style: TextStyle(fontFamily: "KhMuol", fontSize: 18)),
                       SizedBox(
                         height: 20,
