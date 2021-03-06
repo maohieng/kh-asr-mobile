@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'dart:math' as math show sin, pi, sqrt;
 import 'package:flutter/animation.dart';
 

@@ -14,7 +14,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   var switch_screen = 1;
-  var _titleBar = 'បំលែងសំលេងនិយាយទៅជាអត្ថបទ';
+  var _titleBar = 'បំលែងសំឡេងនិយាយទៅជាអត្ថបទ';
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
