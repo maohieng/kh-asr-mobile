@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:chunked_stream/chunked_stream.dart';
@@ -88,20 +89,21 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     }
 
     _webSocketChannel.stream.listen((message) {
-      if (message == '') {
-        if (_beforeResult != '') {
-          _previousResult += _beforeResult + ' ';
-        }
-      } else {
-        if (message.split(' ').length == 1 && message != _beforeResult) {
-          _previousResult += _beforeResult + ' ';
-        }
+      Map valueMap = json.decode(message);
 
-        _textController.text = _previousResult + message;
+      String trans = valueMap['text'];
+      if (trans != null) {
+        _previousResult += _beforeResult + ' ';
+      }
+
+      trans = valueMap['partial'];
+      if (trans != '') {
+        _textController.text = _previousResult + trans;
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
         setState(() {});
       }
-      _beforeResult = message;
+
+      _beforeResult = trans;
     });
 
     return true;
@@ -180,6 +182,11 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
       setState(() {});
 
       Map audioInfo = await getMediaInfo(selectFile.path);
+      if (audioInfo == null) {
+        showWarningToast(context, "ឯកសារសំឡេងមិនត្រឹមត្រូវ!");
+        return;
+      }
+
       var format = audioInfo['format_name'];
       var sampleRate = audioInfo['sample_rate'];
       var channel = audioInfo['nb_streams'];

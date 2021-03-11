@@ -69,21 +69,21 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     }
 
     _webSocketChannel.stream.listen((message) {
-      if (message == '') {
-        if (_beforeResult != '') {
-          _previousResult += _beforeResult + ' ';
-        }
-      } else {
-        if (message.split(' ').length == 1 && message != _beforeResult) {
-          _previousResult += _beforeResult + ' ';
-        }
+      Map valueMap = json.decode(message);
 
-        _textController.text = _previousResult + message;
+      String trans = valueMap['text'];
+      if (trans != null) {
+        _previousResult += _beforeResult + ' ';
+      }
+
+      trans = valueMap['partial'];
+      if (trans != '') {
+        _textController.text = _previousResult + trans;
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
         setState(() {});
       }
 
-      _beforeResult = message;
+      _beforeResult = trans;
     });
 
     return true;
