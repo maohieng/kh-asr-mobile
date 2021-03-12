@@ -16,9 +16,8 @@ class SpeechRecognitionScreen extends StatefulWidget {
       _SpeechRecognitionScreenState();
 }
 
-typedef _Fn = void Function();
-
-class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
+class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
+    with WidgetsBindingObserver {
   // ui
   TextEditingController _textController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
@@ -41,23 +40,32 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     _openRecorder();
-    _timer = new Timer.periodic(new Duration(milliseconds: 900), (timer) {
-      setState(() {});
-    });
   }
 
   @override
   void dispose() {
-    stopRecorder();
-    _timer.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+
+    if (_recorder.isRecording) {
+      stopRecorder();
+    }
+
     _recorder.closeAudioSession();
     _recorder = null;
 
-    if (_webSocketChannel != null) {
-      _webSocketChannel.sink?.close();
-    }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_recorder.isRecording) {
+        stopRecorder();
+      }
+    }
   }
 
   Future<bool> startWebSocket() async {
@@ -77,7 +85,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
       }
 
       trans = valueMap['partial'];
-      if (trans != '') {
+      if (trans != null && trans != '') {
         _textController.text = _previousResult + trans;
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
         setState(() {});
@@ -90,7 +98,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
   }
 
   Future<void> stopWebSocket() async {
-    await _webSocketChannel.sink.close();
+    if (_webSocketChannel != null) {
+      await _webSocketChannel.sink.close();
+    }
   }
 
   Future<bool> _openRecorder() async {
@@ -111,16 +121,18 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
 
   Future<void> stopRecorder() async {
     await _recorder.stopRecorder();
-    if (_recordingDataSubscription != null) {
-      await _recordingDataSubscription.cancel();
-      _recordingDataSubscription = null;
-      _stopwatch.stop();
-      // stop web socket
-      stopWebSocket();
-    }
+    await _recordingDataSubscription.cancel();
+    _recordingDataSubscription = null;
+
+    _stopwatch.stop();
+    _timer.cancel();
+
+    stopWebSocket();
+
+    setState(() {});
   }
 
-  Future<void> record() async {
+  Future<void> startRecorder() async {
     var status = await checkInternetConnection();
     if (status == false) {
       showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
@@ -143,6 +155,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
     });
 
     _stopwatch.start();
+    _timer = new Timer.periodic(new Duration(milliseconds: 500), (timer) {
+      setState(() {});
+    });
 
     await _recorder.startRecorder(
       toStream: recordingDataController.sink,
@@ -161,7 +176,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
         return;
       }
     }
-    _recorder.isStopped ? record() : stopRecorder();
+    _recorder.isStopped ? startRecorder() : stopRecorder();
   }
 
   @override
@@ -250,6 +265,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen> {
                                           _previousResult = '';
                                           _textController.clear();
                                           _stopwatch.reset();
+
+                                          setState(() {});
 
                                           showToast(
                                               context, "អត្ថបទត្រូវបានលុប");

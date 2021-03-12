@@ -22,7 +22,8 @@ class VoiceUploadScreen extends StatefulWidget {
 ///
 const int tBlockSize = 4000;
 
-class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
+class _VoiceUploadScreenState extends State<VoiceUploadScreen>
+    with WidgetsBindingObserver {
   // ui
   TextEditingController _textController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
@@ -44,6 +45,8 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     initPermission();
 
     _mPlayer.openAudioSession().then((value) {
@@ -53,14 +56,25 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
+    if (_mPlayer.isPlaying) {}
+
     _mPlayer.closeAudioSession();
     _mPlayer = null;
 
-    if (_webSocketChannel != null) {
-      _webSocketChannel.sink?.close();
-    }
+    stopWebSocket();
 
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_mPlayer.isPlaying) {
+        stopPlayer();
+      }
+    }
   }
 
   initPermission() async {
@@ -68,15 +82,58 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
     return status != PermissionStatus.granted;
   }
 
-  Future initPlayer() async {
+  Future<void> initPlayer() async {
     await _mPlayer.startPlayerFromStream(
         codec: Codec.pcm16, numChannels: 1, sampleRate: SAMPLE_RATE);
     setState(() {});
   }
 
+  Future<void> startPlayer() async {
+    if (_audioFilePath != null) {
+      if (_mPlayer.isPlaying == true) {
+        await stopPlayer();
+      } else {
+        var status = await checkInternetConnection();
+        if (status == false) {
+          showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
+          return;
+        }
+
+        status = await startWebSocket();
+        if (status == false) {
+          showErrorToast(context, "មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ!");
+          return;
+        }
+
+        await initPlayer();
+        await processDecoding(_audioFilePath);
+        await stopPlayer();
+      }
+    } else {
+      showWarningToast(context, "សូមជ្រើសរើសឯកសារសំឡេង!");
+    }
+  }
+
   Future<void> stopPlayer() async {
-    if (_mPlayer != null) {
-      await _mPlayer.stopPlayer();
+    await _mPlayer.stopPlayer();
+    setState(() {});
+  }
+
+  Future<void> processDecoding(String filePath) async {
+    _beforeResult = '';
+    _previousResult = '';
+
+    final bufferedStream = bufferChunkedStream(File(filePath).openRead());
+    final iterator = ChunkedStreamIterator(bufferedStream);
+
+    var data;
+    while (_mPlayer.isPlaying) {
+      data = await iterator.read(tBlockSize);
+      if (data.isEmpty) {
+        break;
+      }
+      await _mPlayer.feedFromStream(Uint8List.fromList(data));
+      _webSocketChannel.sink.add(data);
     }
   }
 
@@ -97,7 +154,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
       }
 
       trans = valueMap['partial'];
-      if (trans != '') {
+      if (trans != null && trans != '') {
         _textController.text = _previousResult + trans;
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
         setState(() {});
@@ -110,55 +167,9 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
   }
 
   Future<void> stopWebSocket() async {
-    await _webSocketChannel.sink.close();
-  }
-
-  Future<void> playStreaming() async {
-    if (_audioFilePath != null) {
-      if (_mPlayer.isPlaying == true) {
-        await stopPlayer().then((value) => setState(() {}));
-      } else {
-        await _processStreaming(_audioFilePath)
-            .then((value) => setState(() {}));
-      }
-    } else {
-      showWarningToast(context, "សូមជ្រើសរើសឯកសារសំឡេង!");
+    if (_webSocketChannel != null) {
+      await _webSocketChannel.sink.close();
     }
-  }
-
-  Future<void> _processStreaming(String filePath) async {
-    var status = await checkInternetConnection();
-    if (status == false) {
-      showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
-      return;
-    }
-
-    status = await startWebSocket();
-    if (status == false) {
-      showErrorToast(context, "មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ!");
-      return;
-    }
-
-    await initPlayer();
-
-    _beforeResult = '';
-    _previousResult = '';
-
-    final bufferedStream = bufferChunkedStream(File(filePath).openRead());
-    final iterator = ChunkedStreamIterator(bufferedStream);
-
-    var data;
-    while (_mPlayer.isPlaying) {
-      data = await iterator.read(tBlockSize);
-      if (data.isEmpty) {
-        break;
-      }
-      await _mPlayer.feedFromStream(Uint8List.fromList(data));
-      _webSocketChannel.sink.add(data);
-    }
-
-    await stopPlayer();
-    await stopWebSocket();
   }
 
   void openFilePicker() async {
@@ -317,7 +328,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen> {
         // ),
         GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: playStreaming,
+          onTap: startPlayer,
           child: Container(
             height: 90,
             child: _mPlayer.isPlaying == false
