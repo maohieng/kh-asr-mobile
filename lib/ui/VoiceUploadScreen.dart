@@ -95,7 +95,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
       } else {
         var status = await checkInternetConnection();
         if (status == false) {
-          showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
+          showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិត!');
           return;
         }
 
@@ -198,22 +198,37 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
         return;
       }
 
-      var format = audioInfo['format_name'];
-      var sampleRate = audioInfo['sample_rate'];
-      var channel = audioInfo['nb_streams'];
+      // var format = audioInfo['format_name'];
+      // var sampleRate = audioInfo['sample_rate'];
+      // var channel = audioInfo['nb_streams'];
 
-      if (format != 'wav' || sampleRate != '16000' || channel != 1) {
-        final tmpFile = File(await getTmpDirPath() + '/audio.wav');
-        if (await tmpFile.exists() == true) {
-          await tmpFile.delete();
-        }
+      // if (format != 'wav' || sampleRate != '16000' || channel != 1) {
+      // final tmpFile = File(await getTmpDirPath() + '/audio.wav');
+      // if (await tmpFile.exists() == true) {
+      //   await tmpFile.delete();
+      // }
 
-        Dialogs.showLoadingDialog(context, _keyLoader, "កំពុងដំណើរការ....");
-        await preprocessAudio(selectFile.path, tmpFile.path);
-        Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      // Dialogs.showLoadingDialog(context, _keyLoader, "កំពុងដំណើរការ....");
+      // await preprocessAudio(selectFile.path, tmpFile.path);
+      // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
 
-        _audioFilePath = tmpFile.path;
+      // _audioFilePath = tmpFile.path;
+      // }
+
+      final tmpFile = File(await getTmpDirPath() + '/audio.wav');
+      if (await tmpFile.exists() == true) {
+        await tmpFile.delete();
       }
+
+      Dialogs.showLoadingDialog(context, _keyLoader, "កំពុងដំណើរការ....");
+      int result = await preprocessAudio(selectFile.path, tmpFile.path);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+
+      if (result == 1) {
+        showErrorToast(context, "មានបញ្ហាដំណើរការឯកសារសំឡេង");
+      }
+
+      _audioFilePath = tmpFile.path;
 
       showToast(context, "ឯកសារសំឡេងត្រូវបានជ្រើសរើស!");
     }

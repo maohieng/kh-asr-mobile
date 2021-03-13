@@ -19,7 +19,10 @@ Future<Map> getMediaInfo(String file) async {
   return mediaInfo;
 }
 
-Future<void> preprocessAudio(fileIn, fileOut) async {
+Future<int> preprocessAudio(fileIn, fileOut) async {
+  // framerate=16000, mono=1, silence padding=1s,1s
+  String option =
+      '-ar 16000 -ac 1 -af "adelay=1s:all=true" -af "apad=pad_dur=1"';
   final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
-  await _flutterFFmpeg.execute("-i '$fileIn' -ar 16000 -ac 1 $fileOut");
+  return await _flutterFFmpeg.execute("-i '$fileIn' $option $fileOut");
 }

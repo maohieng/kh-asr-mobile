@@ -135,7 +135,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
   Future<void> startRecorder() async {
     var status = await checkInternetConnection();
     if (status == false) {
-      showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិតទេ!');
+      showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិត!');
       return;
     }
 
