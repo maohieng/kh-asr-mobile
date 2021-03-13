@@ -12,15 +12,6 @@ String formatTime(int milliseconds) {
   return "$hours:$minutes:$seconds";
 }
 
-Future<bool> checkInternetConnection() async {
-  try {
-    await InternetAddress.lookup('google.com');
-  } on SocketException catch (_) {
-    return false;
-  }
-  return true;
-}
-
 Future<String> getTmpDirPath() async {
   Directory tempDir = await getTemporaryDirectory();
   return tempDir.path;

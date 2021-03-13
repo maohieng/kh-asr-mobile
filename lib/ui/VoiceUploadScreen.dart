@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -9,7 +10,9 @@ import 'dart:typed_data' show Uint8List;
 import 'package:khmerasr/ui/widget/RipplesAnimation.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
 import '../utils/Common.dart';
+import '../utils/Connectivity.dart';
 import '../utils/Toast.dart';
 import '../utils/FFmpeg.dart';
 import '../utils/Dialogs.dart';
@@ -27,6 +30,9 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
   // ui
   TextEditingController _textController = new TextEditingController();
   ScrollController _scrollController = ScrollController();
+
+  // internet connectivity
+  StreamSubscription<DataConnectionStatus> _dataConnectionSubscription;
 
   // web socket
   IOWebSocketChannel _webSocketChannel;
@@ -52,6 +58,8 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
     _mPlayer.openAudioSession().then((value) {
       setState(() {});
     });
+
+    initConnectionSubscription();
   }
 
   @override
@@ -74,12 +82,31 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
       if (_mPlayer.isPlaying) {
         stopPlayer();
       }
+      _dataConnectionSubscription.cancel();
+    } else if (state == AppLifecycleState.resumed) {
+      initConnectionSubscription();
     }
   }
 
   initPermission() async {
     final status = await Permission.storage.request();
     return status != PermissionStatus.granted;
+  }
+
+  void initConnectionSubscription() {
+    var connectionChecker = DataConnectionChecker();
+    // check every 5 seconds
+    connectionChecker.checkInterval = Duration(seconds: 5);
+
+    _dataConnectionSubscription =
+        connectionChecker.onStatusChange.listen((status) {
+      if (status == DataConnectionStatus.disconnected) {
+        if (_mPlayer.isPlaying) {
+          showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិត!');
+          stopPlayer();
+        }
+      }
+    });
   }
 
   Future<void> initPlayer() async {

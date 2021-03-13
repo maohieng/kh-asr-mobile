@@ -7,7 +7,9 @@ import 'package:web_socket_channel/io.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:clipboard/clipboard.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
 import '../utils/Common.dart';
+import '../utils/Connectivity.dart';
 import '../utils/Toast.dart';
 
 class SpeechRecognitionScreen extends StatefulWidget {
@@ -28,6 +30,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
   FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   StreamSubscription _recordingDataSubscription;
 
+  // internet connectivity
+  StreamSubscription<DataConnectionStatus> _dataConnectionSubscription;
+
   // web socket
   IOWebSocketChannel _webSocketChannel;
 
@@ -43,6 +48,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
     WidgetsBinding.instance.addObserver(this);
 
     _openRecorder();
+
+    initConnectionSubscription();
   }
 
   @override
@@ -56,6 +63,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
     _recorder.closeAudioSession();
     _recorder = null;
 
+    _dataConnectionSubscription.cancel();
+
     super.dispose();
   }
 
@@ -65,6 +74,9 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
       if (_recorder.isRecording) {
         stopRecorder();
       }
+      _dataConnectionSubscription.cancel();
+    } else if (state == AppLifecycleState.resumed) {
+      initConnectionSubscription();
     }
   }
 
@@ -117,6 +129,22 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
   Future<bool> initPermission() async {
     var status = await Permission.microphone.request();
     return status == PermissionStatus.granted;
+  }
+
+  void initConnectionSubscription() {
+    var connectionChecker = DataConnectionChecker();
+    // check every 5 seconds
+    connectionChecker.checkInterval = Duration(seconds: 5);
+
+    _dataConnectionSubscription =
+        connectionChecker.onStatusChange.listen((status) {
+      if (status == DataConnectionStatus.disconnected) {
+        if (_recorder.isRecording) {
+          showErrorToast(context, 'មិនមានការតភ្ជាប់អ៊ីនធឺណិត!');
+          stopRecorder();
+        }
+      }
+    });
   }
 
   Future<void> stopRecorder() async {
