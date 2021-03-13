@@ -53,7 +53,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    initPermission();
+    // initPermission();
 
     _mPlayer.openAudioSession().then((value) {
       setState(() {});
@@ -88,15 +88,15 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
     }
   }
 
-  initPermission() async {
+  Future<bool> initPermission() async {
     final status = await Permission.storage.request();
-    return status != PermissionStatus.granted;
+    return status == PermissionStatus.granted;
   }
 
   void initConnectionSubscription() {
     var connectionChecker = DataConnectionChecker();
-    // check every 5 seconds
-    connectionChecker.checkInterval = Duration(seconds: 5);
+    // check every 3 seconds
+    connectionChecker.checkInterval = Duration(seconds: 3);
 
     _dataConnectionSubscription =
         connectionChecker.onStatusChange.listen((status) {
@@ -200,6 +200,10 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
   }
 
   void openFilePicker() async {
+    var status = await initPermission();
+    if (status == false) {
+      return;
+    }
     var filePicker;
     try {
       filePicker = await FilePicker.platform.pickFiles(

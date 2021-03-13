@@ -47,7 +47,7 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    _openRecorder();
+    // _openRecorder();
 
     initConnectionSubscription();
   }
@@ -133,8 +133,8 @@ class _SpeechRecognitionScreenState extends State<SpeechRecognitionScreen>
 
   void initConnectionSubscription() {
     var connectionChecker = DataConnectionChecker();
-    // check every 5 seconds
-    connectionChecker.checkInterval = Duration(seconds: 5);
+    // check every 3 seconds
+    connectionChecker.checkInterval = Duration(seconds: 3);
 
     _dataConnectionSubscription =
         connectionChecker.onStatusChange.listen((status) {
