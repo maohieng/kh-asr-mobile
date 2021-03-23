@@ -33,11 +33,11 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
               child: Column(
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(0),
                     child: Image(
-                        image: AssetImage('assets/images/logo_app.jpg'),
+                        image: AssetImage('assets/images/logo_app_final.png'),
                         alignment: Alignment.center,
-                        height: 100),
+                        height: 150),
                   ),
                   RichText(
                     softWrap: true,
