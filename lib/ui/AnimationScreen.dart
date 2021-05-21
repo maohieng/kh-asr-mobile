@@ -68,10 +68,23 @@ class _AnimationScreenState extends State<AnimationScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/logo_cadt.png',
-                        fit: BoxFit.contain,
-                        width: 200,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/logo_mptc.png',
+                            fit: BoxFit.contain,
+                            width: 100,
+                          ),
+                          SizedBox(
+                            width: 15,
+                          ),
+                          Image.asset(
+                            'assets/images/logo_cadt.png',
+                            fit: BoxFit.contain,
+                            width: 200,
+                          )
+                        ],
                       ),
                       SizedBox(
                         height: 20,

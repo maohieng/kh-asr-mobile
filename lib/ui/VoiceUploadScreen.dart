@@ -379,7 +379,7 @@ class _VoiceUploadScreenState extends State<VoiceUploadScreen>
             height: 90,
             child: _mPlayer.isPlaying == false
                 ? Image.asset(
-                    'assets/images/microphone_2_pro.png',
+                    'assets/images/process_2.jpeg',
                     fit: BoxFit.contain,
                     height: 62,
                     width: 62,
