@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:khmerasr/ui/AnimationScreen.dart';
 import 'package:khmerasr/ui/widget/MainPage.dart';
 import 'package:khmerasr/utils/HexColor.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // disable screen orientation
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override

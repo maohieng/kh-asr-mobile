@@ -5,7 +5,7 @@ const SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const int SAMPLE_RATE = 16000;
 
 const String USAGE_URL = '';
-const String FEEDBACK_URL = 'https://forms.gle/zCLLrKpWrwnrFrYh9';
+const String FEEDBACK_URL = 'https://forms.gle/zyFhUvxYndexoPDq7';
 
 String formatTime(int milliseconds) {
   var secs = milliseconds ~/ 1000;
