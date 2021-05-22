@@ -1,11 +1,13 @@
 //UploadVoice
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:khmerasr/ui/SpeechRecognitionScreen.dart';
 import 'package:khmerasr/utils/HexColor.dart';
 
 import '../VoiceUploadScreen.dart';
 import '../AboutUsScreen.dart';
+import '../../utils/Common.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -52,7 +54,20 @@ class _MainPageState extends State<MainPage> {
                     Navigator.of(context).pop();
                   }),
               ListTile(
-                  leading: Icon(Icons.info, color: Colors.indigo),
+                  leading:
+                      Icon(Icons.fact_check_outlined, color: Colors.indigo),
+                  title: Text('របៀបប្រើប្រាស់'),
+                  onTap: () {
+                    openUsageUrl();
+                  }),
+              ListTile(
+                  leading: Icon(Icons.feedback_outlined, color: Colors.indigo),
+                  title: Text('មតិប្រឡប់'),
+                  onTap: () {
+                    openFeedbackUrl();
+                  }),
+              ListTile(
+                  leading: Icon(Icons.info_outline, color: Colors.indigo),
                   title: Text('អំពីយើង'),
                   onTap: () {
                     setState(() {
@@ -92,6 +107,18 @@ class _MainPageState extends State<MainPage> {
       default:
         return AboutUsScreen();
         break;
+    }
+  }
+
+  void openUsageUrl() async {
+    if (await canLaunch(USAGE_URL)) {
+      await launch(USAGE_URL);
+    }
+  }
+
+  void openFeedbackUrl() async {
+    if (await canLaunch(FEEDBACK_URL)) {
+      await launch(FEEDBACK_URL);
     }
   }
 }
