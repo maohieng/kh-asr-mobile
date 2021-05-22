@@ -111,8 +111,8 @@ class _MainPageState extends State<MainPage> {
   }
 
   void openUsageUrl() async {
-    if (await canLaunch(USAGE_URL)) {
-      await launch(USAGE_URL);
+    if (await canLaunch(TUTORIAL_URL)) {
+      await launch(TUTORIAL_URL);
     }
   }
 

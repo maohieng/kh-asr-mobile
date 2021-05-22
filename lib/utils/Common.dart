@@ -4,7 +4,8 @@ import 'package:path_provider/path_provider.dart';
 const SERVER_URL = 'ws://103.16.63.37:9002/api/asr/';
 const int SAMPLE_RATE = 16000;
 
-const String USAGE_URL = '';
+const String TUTORIAL_URL =
+    'https://www.youtube.com/playlist?list=PL5eYkyqXGP-eklxlNr1rSORKnWBSSSJK_';
 const String FEEDBACK_URL = 'https://forms.gle/zyFhUvxYndexoPDq7';
 
 String formatTime(int milliseconds) {
