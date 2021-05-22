@@ -27,7 +27,7 @@ class _MainPageState extends State<MainPage> {
               DrawerHeader(
                 child: Center(
                   child: Image.asset('assets/images/logo_app_wbg.png',
-                      fit: BoxFit.contain, height: 140),
+                      fit: BoxFit.contain, height: 130),
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
